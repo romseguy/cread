@@ -5,6 +5,7 @@ function App() {
   return (
     <>
       <h1>Cahiers</h1>
+      {/* <hr style={{marginTop: 0, marginBottom: "24px" }} /> */}
       <Cahiers />
     </>
   );

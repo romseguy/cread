@@ -207,10 +207,6 @@ export function Cahiers() {
 
   return (
     <>
-      <button disabled={cahiers.length > 0} onClick={fetchTitles}>
-        Footnotes
-      </button>
-
       <ul>
         {cahiers.map(({ count, links }, index) => {
           return (
@@ -238,7 +234,9 @@ export function Cahiers() {
         })}
       </ul>
 
-      <hr style={{ margin: "24px" }} />
+      <button disabled={cahiers.length > 0} style={{marginRight: "24px"}} onClick={fetchTitles}>
+        Footnotes
+      </button>
 
       <button
         disabled={cahiers.length > 0}
