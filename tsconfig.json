@@ -4,6 +4,9 @@
     "alwaysStrict": true,
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
     "checkJs": true,
     "declaration": true,
     "declarationMap": true,
@@ -11,11 +14,7 @@
     "forceConsistentCasingInFileNames": true,
     "incremental": true,
     "jsx": "react-jsxdev",
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ESNext"
-    ],
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "strict": true,
     "outDir": "dist",
     "module": "ESNext",
@@ -27,12 +26,10 @@
   "include": [
     "src/**/*",
     "types/*",
-    "node_modules/vite/types/*"
-, "server/app.ts"  ],
-  "exclude": [
-    "node_modules",
-    "dist"
+    "node_modules/vite/types/*",
+    "server/app.ts"
   ],
+  "exclude": ["node_modules", "dist"],
   "ts-node": {
     "transpileOnly": true,
     "compilerOptions": {
