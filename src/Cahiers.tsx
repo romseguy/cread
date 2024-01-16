@@ -1,5 +1,7 @@
 import axios from "axios";
 import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 type Cahier = {
   count: number | string;
@@ -234,19 +236,23 @@ export function Cahiers() {
         })}
       </ul>
 
-      <button disabled={cahiers.length > 0} style={{marginRight: "24px"}} onClick={fetchTitles}>
+      <Button
+        disabled={cahiers.length > 0}
+        style={{ marginRight: "24px" }}
+        onClick={fetchTitles}
+      >
         Footnotes
-      </button>
+      </Button>
 
-      <button
+      <Button
         disabled={cahiers.length > 0}
         style={{ marginBottom: "12px" }}
         onClick={fetchStrings}
       >
         HTML
-      </button>
+      </Button>
 
-      <textarea
+      <Textarea
         readOnly
         rows={10}
         style={{
