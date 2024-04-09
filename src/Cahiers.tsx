@@ -1,4 +1,5 @@
 import axios from "axios";
+//import jsPDF from "jspdf";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,7 +16,6 @@ export function Cahiers() {
   let [cahiers, setCahiers] = useState<CahiersList>([]);
   console.log("🚀 ~ cahiers:", cahiers);
   const str = `
-  <!DOCTYPE html>
   <html lang="fr-FR">
     <head>
       <meta charset="utf-8"/>
@@ -236,21 +236,39 @@ export function Cahiers() {
         })}
       </ul>
 
-      <Button
-        disabled={cahiers.length > 0}
-        style={{ marginRight: "24px" }}
-        onClick={fetchTitles}
-      >
-        Footnotes
-      </Button>
+      <div className="mb-6">
+        <Button
+          className="mr-6"
+          disabled={cahiers.length > 0}
+          onClick={fetchTitles}
+        >
+          Footnotes
+        </Button>
 
-      <Button
-        disabled={cahiers.length > 0}
-        style={{ marginBottom: "12px" }}
-        onClick={fetchStrings}
-      >
-        HTML
-      </Button>
+        <Button
+          className="mr-6"
+          disabled={cahiers.length > 0}
+          onClick={fetchStrings}
+        >
+          HTML
+        </Button>
+
+        {/* <Button
+          onClick={async () => {
+            const doc = new jsPDF({
+              format: "a4",
+              unit: "px"
+            });
+            doc.html(str, {
+              async callback(doc) {
+                doc.save("fsgds");
+              }
+            });
+          }}
+        >
+          PDF
+        </Button> */}
+      </div>
 
       <Textarea
         readOnly

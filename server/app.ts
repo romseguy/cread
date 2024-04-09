@@ -1,3 +1,4 @@
+import cors from "cors";
 import axios from "axios";
 import express, { Request, Router } from "express";
 import https from "https";
@@ -20,14 +21,11 @@ interface ResponseBody {}
 
 interface RequestBody {}
 
-interface RequestQuery {
-  url?: string;
-}
-
 class App {
   public router: Router = express.Router();
 
   constructor() {
+    this.router.use(cors());
     this.router.get("/", (req, res) => {
       res.send("Welcome to the API!");
     });
@@ -35,7 +33,14 @@ class App {
     this.router.get(
       "/fetch",
       async (
-        req: Request<RequestParams, ResponseBody, RequestBody, RequestQuery>,
+        req: Request<
+          RequestParams,
+          ResponseBody,
+          RequestBody,
+          {
+            url?: string;
+          }
+        >,
         res
       ) => {
         try {
