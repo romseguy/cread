@@ -11,11 +11,7 @@
     "forceConsistentCasingInFileNames": true,
     "incremental": true,
     "jsx": "react-jsxdev",
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ESNext"
-    ],
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "strict": true,
     "outDir": "dist/app",
     "module": "ESNext",
@@ -24,15 +20,8 @@
     "sourceMap": true,
     "target": "ESNext"
   },
-  "include": [
-    "api/**/*",
-    "types/*",
-    "server.ts"
-  ],
-  "exclude": [
-    "dist",
-    "src//*.tsx"
-  ],
+  "include": ["api/**/*", "types/*", "server.ts"],
+  "exclude": ["dist", "src//*.tsx"],
   "ts-node": {
     "transpileOnly": true,
     "compilerOptions": {
