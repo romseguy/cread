@@ -1,3 +1,4 @@
+//@ts-nocheck
 export default (haystack, sliceLength: number) => {
   const slices = [];
 

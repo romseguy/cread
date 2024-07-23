@@ -1,3 +1,4 @@
+//@ts-nocheck
 import moment from "moment-timezone";
 import dictionary from "relative-date-names";
 

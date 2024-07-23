@@ -1,6 +1,8 @@
+import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import { ThemeProvider } from "@/components/theme-provider";
+import { css } from "twin.macro";
+import { Theme, ThemeProvider, useTheme } from "@/components/theme-provider";
 import App from "./App";
 import "./index.css";
 
@@ -13,7 +15,7 @@ import "./index.css";
 ReactDOM.hydrateRoot(
   document.getElementById("app") as HTMLElement,
   <BrowserRouter>
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <App />
     </ThemeProvider>
   </BrowserRouter>

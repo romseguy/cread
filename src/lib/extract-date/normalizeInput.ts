@@ -1,3 +1,4 @@
+//@ts-nocheck
 export default (input: string): string => {
   let lastInput = input;
 
@@ -5,15 +6,15 @@ export default (input: string): string => {
     const result = lastInput
 
       // 2019-02-12T00:00:00
-      .replace(/(\d+)T(\d+)/, '$1 $2')
+      .replace(/(\d+)T(\d+)/, "$1 $2")
 
-      .replace(/(\d+)\s\/\s(\d+)/, '$1/$2')
+      .replace(/(\d+)\s\/\s(\d+)/, "$1/$2")
 
       // Ignore commas to capture formats such as 'Monday 20, May
-      .replace(/,/g, ' ')
+      .replace(/,/g, " ")
 
-      .replace(/[.:;] /g, ' ')
-      .replace(/\s+/g, ' ')
+      .replace(/[.:;] /g, " ")
+      .replace(/\s+/g, " ")
       .trim();
 
     if (result === lastInput) {
@@ -23,5 +24,5 @@ export default (input: string): string => {
     lastInput = result;
   }
 
-  throw new Error('Unexpected state.');
+  throw new Error("Unexpected state.");
 };

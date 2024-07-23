@@ -1,3 +1,4 @@
+//@ts-nocheck
 import cartesian from "cartesian";
 import calculateSpecificity from "./calculateSpecificity";
 

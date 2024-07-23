@@ -1,3 +1,4 @@
+//@ts-nocheck
 // @flow
 
 /* eslint-disable no-continue, no-negated-condition, import/no-namespace */
@@ -14,16 +15,12 @@ import createMovingChunks from "./createMovingChunks";
 import extractRelativeDate from "./extractRelativeDate";
 import createFormats from "./createFormats";
 import normalizeInput from "./normalizeInput";
-//import Logger from './Logger';
 import type {
   ConfigurationType,
   DateMatchType,
   UserConfigurationType
 } from "./types";
 
-// const log = Logger.child({
-//   namespace: 'extractDate',
-// });
 const log = {};
 
 const defaultConfiguration = {

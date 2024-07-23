@@ -1,3 +1,4 @@
+//@ts-nocheck
 export default (dateFnsFormat: string): number => {
   let specificity = 0;
 
