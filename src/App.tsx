@@ -1,9 +1,11 @@
 import { format, isAfter, parseISO, setDayOfYear, setYear } from "date-fns";
 import React, { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { css } from "twin.macro";
-import "./App.css";
 import { useTheme } from "./components/theme-provider";
-import { ModeToggle } from "./components/mode-toggle";
+import "./App.css";
+import { IPost, Post } from "./Post";
+import axios from "axios";
 //const data = import.meta.glob("./assets/t.json");
 
 const d2021 = setYear(setDayOfYear(new Date(), 1), 2021);
@@ -11,36 +13,53 @@ const d2022 = setYear(setDayOfYear(new Date(), 1), 2022);
 const d2023 = setYear(setDayOfYear(new Date(), 1), 2023);
 const d2024 = setYear(setDayOfYear(new Date(), 1), 2024);
 
-type YearsR = Record<number, any[]>;
+type Years = Record<number, IPost[]>;
 
 function App() {
+  const [search, setSearch] = useSearchParams();
   const { theme, setTheme } = useTheme();
   const [isDisabled, setIsDisabled] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [refresh, setRefresh] = useState(false);
-  const [user, setUser] = useState("MJF");
-  const [years, setYears] = useState<Record<number, any[]>>({});
+  const [threadUrl, setThreadUrl] = useState(
+    search.get("t") ||
+      "https://cassiopaea.org/forum/threads/dreams-of-the-people-on-the-forum.53811/"
+    //"https://cassiopaea.org/forum/threads/alton-towers-sir-francis-bacon-and-the-rosicrucians.50391/"
+  );
+  const tmatches = threadUrl?.match(/[0-9]+/);
+  const threadId = tmatches ? tmatches[0] : undefined;
+  const [user, setUser] = useState(search.get("user") || "*");
+  const [years, setYears] = useState<Years>({});
 
   const [currentY, setCurrentY] = useState(2021);
-  const handleClick = (y) => {
+  const handleClick = (y: number) => {
     setCurrentY(y);
   };
   const currentPosts = years[currentY] || [];
 
   useEffect(() => {
     (async function extractYears() {
-      console.log("🚀 ~ extractYears ~ user:", user);
-      const newYears: YearsR = {
+      const res = await fetch(threadId ? "/" + threadId + ".json" : "/t.json");
+      const data: { posts: IPost[] } = await res.json();
+      let currentUser = user;
+      if (currentUser === "*") {
+        //currentUser = data.posts[0].user;
+        //setUser(data.posts[0].user);
+      }
+      const newYears: Years = {
         2021: [],
         2022: [],
         2023: [],
         2024: []
       };
-      const res = await fetch("/t.json");
-      const data = await res.json();
-      for (const post of data.posts) {
-        if (post.user !== user) continue;
 
+      for (const post of data.posts) {
+        if (
+          currentUser !== "" &&
+          currentUser !== "*" &&
+          post.user.toLowerCase() !== currentUser.toLowerCase()
+        )
+          continue;
         if (isAfter(parseISO(post.date), d2024)) newYears[2024].push(post);
         else if (isAfter(parseISO(post.date), d2023)) newYears[2023].push(post);
         else if (isAfter(parseISO(post.date), d2022)) newYears[2022].push(post);
@@ -55,9 +74,11 @@ function App() {
   useEffect(
     function transformDOM() {
       //if (!Object.keys(years).length) return;
-      //const main = document.querySelector("main");
 
-      const divs = document.querySelectorAll("div");
+      const main = document.querySelector("main");
+      const node = main || document;
+
+      const divs = node.querySelectorAll("div");
       for (const div of divs) {
         if (div.style["text-align"] === "center") {
           div.style.background = "transparent";
@@ -65,7 +86,7 @@ function App() {
         }
       }
 
-      const imgs = document.querySelectorAll("img");
+      const imgs = node.querySelectorAll("img");
 
       for (const img of imgs) {
         img.loading = "eager";
@@ -81,10 +102,11 @@ function App() {
         }
       }
 
-      const links = document.querySelectorAll("a");
+      const links = node.querySelectorAll("a");
 
       for (const link of links) {
-        if (!link.title.includes("post")) link.target = "_blank";
+        if (!link.title.includes("post") && !link.title.includes("Go to top"))
+          link.target = "_blank";
         if (link.textContent === "Click to expand...") link.textContent = "";
         else if (link.href.includes("goto")) {
           const matches = link.href.match(/forum.+/);
@@ -94,7 +116,7 @@ function App() {
         }
       }
 
-      const spans = document.querySelectorAll("span");
+      const spans = node.querySelectorAll("span");
 
       let i = 0;
       for (const span of spans) {
@@ -107,68 +129,108 @@ function App() {
     [currentY, years]
   );
 
+  useEffect(() => {
+    (async function scrape() {
+      const { data } = await axios.get(
+        "/api/scrape?id=" + threadId + "&url=" + threadUrl
+      );
+      //if (data === "done") setRefresh(!refresh);
+    })();
+  }, [threadId, threadUrl]);
+
   if (isLoading) return "Loading";
 
   return (
-    <main
+    <div
+      id="top"
       css={css`
         a {
           text-decoration: underline;
         }
         blockquote {
-          background: rgba(255, 255, 255, 0.2);
+          background-color: hsl(var(--blockquote));
           padding: 12px;
           margin-bottom: 24px;
           margin-left: 12px;
           text-align: left;
+          ${theme === "dark"
+            ? "border-left: 10px solid white"
+            : "border-left: 10px solid black"};
         }
-
+        button {
+          background-color: teal;
+          border-radius: 36px;
+          color: white;
+          font-weight: bold;
+          padding: 12px;
+        }
+        button:hover {
+          background: green;
+        }
         button[data-key="active"] {
           background: green;
+        }
+        button[data-key="light"] {
+          background: black;
+        }
+        button[data-key="dark"] {
+          background: white;
         }
         h1 {
           font-size: 2rem;
           color: purple;
-          margin: 24px 0;
+          /*margin: 24px 0;*/
         }
-        h2 {
+        h2,
+        label {
+          color: blue;
           font-size: 1.5rem;
-          color: red;
-          margin: 6px 0 24px 0;
-        }
-        header {
-          display: flex;
-          flex-direction: column;
-          margin-top: 12px;
-
           button {
-            background: red;
-            color: white;
-            font-weight: bold;
-            margin-right: 12px;
-            padding: 12px;
-          }
-          input {
-            padding: 12px;
-          }
-          button[type="submit"] {
-            background-color: teal;
-            padding: 12px;
+            margin-top: 24px;
           }
         }
         hr {
           border-top-width: 10px;
           border-color: black;
         }
-        & > ul > li:has(> h1) {
-          background: transparent;
+        input {
+          ${theme === "light" ? "border: 1px solid black" : ""};
+          color: black;
+          border-radius: 36px;
+          text-align: center;
         }
+
+        header {
+          display: flex;
+          flex-direction: column;
+
+          nav {
+            display: flex;
+            flex-direction: column;
+            input {
+              padding: 12px;
+            }
+            button {
+              cursor: pointer;
+            }
+            button[data-key="disabled"] {
+              cursor: not-allowed;
+            }
+          }
+        }
+
+        main {
+          margin: 0 auto;
+        }
+
         & > ul > li {
           background-color: hsl(var(--card-foreground));
           text-align: left;
           padding: 12px;
+          & > button {
+            margin: 24px;
+          }
           & > div {
-            background: rgba(255, 255, 255, 0.1);
             padding: 24px 0;
             margin-bottom: 24px;
           }
@@ -186,15 +248,10 @@ function App() {
           position: fixed;
           top: 36px;
           right: 36px;
-          button {
-            background: rgba(
-              ${theme === "dark" ? "255, 255, 255, 1" : "0, 0, 0, 1"}
-            );
-            padding: 12px;
-          }
         `}
       >
         <button
+          data-key={theme}
           onClick={() =>
             setTheme(theme === "dark" || theme === "system" ? "light" : "dark")
           }
@@ -232,89 +289,132 @@ function App() {
       </div>
 
       <header>
-        <div style={{ marginBottom: "12px" }}>
+        <div style={{ margin: "0 auto", textAlign: "center" }}>
+          <h1>Cassiopaea Forum</h1>
+          <h1>Mobile friendly browsing</h1>
+        </div>
+
+        <hr />
+
+        <nav style={{ margin: "0 auto" }}>
+          <label>Enter thread url</label>
           <input
             type="text"
-            defaultValue={user}
-            onChange={(event) => {
-              setIsDisabled(false);
-              setUser(event.target.value);
-            }}
-          />
-          <button
-            type="submit"
-            disabled={isDisabled}
-            onClick={() => {
+            defaultValue={threadUrl}
+            style={{ marginRight: "12px" }}
+            onBlur={() => {
               setIsDisabled(true);
               setRefresh(!refresh);
             }}
-          >
-            View user
-          </button>
-        </div>
+            onChange={(event) => {
+              setIsDisabled(false);
+              setThreadUrl(event.target.value);
+            }}
+          />
 
-        <div style={{ marginBottom: "12px" }}>
+          <label>Enter username</label>
+          <div style={{ display: "flex" }}>
+            <input
+              type="text"
+              value={user}
+              style={{ marginRight: "12px" }}
+              onBlur={() => {
+                setIsDisabled(true);
+                setRefresh(!refresh);
+              }}
+              onChange={(event) => {
+                setIsDisabled(false);
+                setUser(event.target.value);
+              }}
+            />
+            <button
+              onClick={() => {
+                setUser("*");
+                setIsDisabled(false);
+                setRefresh(!refresh);
+              }}
+            >
+              Reset username
+            </button>
+          </div>
+
+          <label>Pick year</label>
           {Object.keys(years).map((key) => {
             const year = Number(key);
+            const len = years[year].length;
+            if (!len) return null;
             return (
               <button
                 key={year}
+                style={{ marginBottom: "12px", marginRight: "12px" }}
                 onClick={() => handleClick(year)}
                 data-key={year === currentY ? "active" : ""}
               >
-                {year} ({years[year].length})
+                {year} ({len} post{len > 1 ? "s" : ""})
               </button>
             );
           })}
-        </div>
+
+          {currentPosts.length > 0 && (
+            <>
+              <label>Pick date or user</label>
+              <ul>
+                {currentPosts.map((post, index) => {
+                  return (
+                    <li>
+                      <a href={`/#${index}`}>
+                        <button key={index}>
+                          {format(post.date, "d MMMM yyyy")}
+                        </button>
+                      </a>
+                      <button
+                        data-key={user === post.user ? "active" : ""}
+                        style={{ marginBottom: "12px", marginLeft: "12px" }}
+                        onClick={() => {
+                          if (user === post.user) {
+                            setUser("");
+                          } else {
+                            setUser(post.user);
+                          }
+                          setRefresh(!refresh);
+                        }}
+                      >
+                        {post.user} (
+                        {
+                          currentPosts.filter(({ user }) => user === post.user)
+                            .length
+                        }
+                        )
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          )}
+        </nav>
+        <hr />
       </header>
 
-      <h1>{currentY}</h1>
-
-      {currentPosts.length > 0 && (
-        <ul>
-          {currentPosts.map((post, index) => {
-            const { id, date } = post;
-            let text = post.text.replace(/\*+/g, "<hr/>");
-            text = text.replace(/<br \/><br \/><br \/>/g, "<br/>");
-
-            return (
-              <React.Fragment key={index}>
-                <li>
-                  <h1>
-                    <a
-                      name={index}
-                      href={`https://cassiopaea.org/forum/goto/post?id=${id}`}
-                      target="_blank"
-                      title="Go to post"
-                    >
-                      {format(date, "d MMMM")}
-                    </a>
-                  </h1>
-                  <h2>
-                    {index !== 0 && (
-                      <>
-                        <a href={"#" + Number(index - 1)} title="Previous post">
-                          {"< Previous"}
-                        </a>
-                        {" ... "}
-                      </>
-                    )}
-                    <a href={"#" + Number(index + 1)} title="Next post">
-                      {"Next >"}
-                    </a>
-                  </h2>
-                </li>
-                <li dangerouslySetInnerHTML={{ __html: text }} />
-                <li>
+      <main>
+        {currentPosts.length > 0 && (
+          <ul>
+            {currentPosts.map((post, index) => {
+              return (
+                <React.Fragment key={`post-${index}`}>
+                  <Post
+                    post={post}
+                    index={index}
+                    isLast={index === currentPosts.length - 1}
+                  />
                   <hr />
-                </li>
-              </React.Fragment>
-            );
-          })}
-        </ul>
-      )}
-    </main>
+                </React.Fragment>
+              );
+            })}
+          </ul>
+        )}
+      </main>
+    </div>
   );
 }
 

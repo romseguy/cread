@@ -18,7 +18,8 @@
     "moduleResolution": "Node",
     "skipLibCheck": true,
     "sourceMap": true,
-    "target": "ESNext"
+    "target": "ESNext",
+    "types": ["vite/client"]
   },
   "include": ["api/**/*", "types/*", "server.ts"],
   "exclude": ["dist", "src//*.tsx"],
