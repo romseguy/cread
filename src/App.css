@@ -6,7 +6,8 @@
   ##Screen = 1281px to higher resolution desktops
 */
 @media (min-width: 1281px) {
-  main {
+  main, nav {
+          margin: 0 auto;
     max-width: 1000px;
     min-width: 700px;
   }
@@ -17,7 +18,8 @@
   ##Screen = B/w 1025px to 1280px
 */
 @media (min-width: 1025px) and (max-width: 1280px) {
-  main {
+  main, nav {
+    margin: 0 auto;
     max-width: 1000px;
     min-width: 700px;
   }
@@ -28,6 +30,7 @@
   ##Screen = B/w 768px to 1024px
 */
 @media (min-width: 768px) and (max-width: 1024px) {
+  
 }
 
 /* 
@@ -35,6 +38,11 @@
   ##Screen = B/w 768px to 1024px
 */
 @media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+  main, nav {
+    margin: 0 auto;
+    max-width: 700px;
+    min-width: 700px;
+  }
 }
 
 /* 
@@ -42,6 +50,11 @@
   ##Screen = B/w 481px to 767px
 */
 @media (min-width: 481px) and (max-width: 767px) {
+  nav {
+    margin: 0 auto;
+    max-width: 400px;
+    min-width: 400px;
+  }
 }
 
 /* 

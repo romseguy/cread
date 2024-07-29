@@ -1,5 +1,5 @@
 import { format, isAfter, parseISO, setDayOfYear, setYear } from "date-fns";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { css } from "twin.macro";
 import { useTheme } from "./components/theme-provider";
@@ -18,128 +18,156 @@ type Years = Record<number, IPost[]>;
 function App() {
   const [search, setSearch] = useSearchParams();
   const { theme, setTheme } = useTheme();
-  const [isDisabled, setIsDisabled] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [refresh, setRefresh] = useState(false);
-  const [threadUrl, setThreadUrl] = useState(
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const initialThreadUrl =
     search.get("t") ||
-      "https://cassiopaea.org/forum/threads/dreams-of-the-people-on-the-forum.53811/"
-    //"https://cassiopaea.org/forum/threads/alton-towers-sir-francis-bacon-and-the-rosicrucians.50391/"
-  );
-  const tmatches = threadUrl?.match(/[0-9]+/);
-  const threadId = tmatches ? tmatches[0] : undefined;
-  const [user, setUser] = useState(search.get("user") || "*");
-  const [years, setYears] = useState<Years>({});
-
-  const [currentY, setCurrentY] = useState(2021);
-  const handleClick = (y: number) => {
-    setCurrentY(y);
-  };
-  const currentPosts = years[currentY] || [];
-
-  useEffect(() => {
-    (async function extractYears() {
-      const res = await fetch(threadId ? "/" + threadId + ".json" : "/t.json");
-      const data: { posts: IPost[] } = await res.json();
-      let currentUser = user;
-      if (currentUser === "*") {
-        //currentUser = data.posts[0].user;
-        //setUser(data.posts[0].user);
-      }
-      const newYears: Years = {
-        2021: [],
-        2022: [],
-        2023: [],
-        2024: []
-      };
-
-      for (const post of data.posts) {
-        if (
-          currentUser !== "" &&
-          currentUser !== "*" &&
-          post.user.toLowerCase() !== currentUser.toLowerCase()
-        )
-          continue;
-        if (isAfter(parseISO(post.date), d2024)) newYears[2024].push(post);
-        else if (isAfter(parseISO(post.date), d2023)) newYears[2023].push(post);
-        else if (isAfter(parseISO(post.date), d2022)) newYears[2022].push(post);
-        else if (isAfter(parseISO(post.date), d2021)) newYears[2021].push(post);
-      }
-
-      setYears(newYears);
-      setIsLoading(false);
-    })();
-  }, [refresh]);
-
+    "https://cassiopaea.org/forum/threads/dreams-of-the-people-on-the-forum.53811/";
+  //"https://cassiopaea.org/forum/threads/alton-towers-sir-francis-bacon-and-the-rosicrucians.50391/"
+  const [threadUrl, setThreadUrl] = useState(initialThreadUrl);
+  const tmatches = threadUrl?.match(/\.([0-9]+)/);
+  const threadId = tmatches ? tmatches[1] : undefined;
+  const [user, setUser] = useState(search.get("u") || "*");
   useEffect(
-    function transformDOM() {
-      //if (!Object.keys(years).length) return;
-
-      const main = document.querySelector("main");
-      const node = main || document;
-
-      const divs = node.querySelectorAll("div");
-      for (const div of divs) {
-        if (div.style["text-align"] === "center") {
-          div.style.background = "transparent";
-          div.style.padding = 0;
-        }
-      }
-
-      const imgs = node.querySelectorAll("img");
-
-      for (const img of imgs) {
-        img.loading = "eager";
-        if (img.src.includes("proxy")) {
-          let srcWithoutProxy = decodeURIComponent(
-            img.src.substring(44, img.src.length)
-          );
-
-          const matches = srcWithoutProxy.match(/[^&]+/g);
-          if (matches) {
-            img.src = matches[0];
-          }
-        }
-      }
-
-      const links = node.querySelectorAll("a");
-
-      for (const link of links) {
-        if (!link.title.includes("post") && !link.title.includes("Go to top"))
-          link.target = "_blank";
-        if (link.textContent === "Click to expand...") link.textContent = "";
-        else if (link.href.includes("goto")) {
-          const matches = link.href.match(/forum.+/);
-          if (matches) {
-            link.href = "https://cassiopaea.org/" + matches[0];
-          }
-        }
-      }
-
-      const spans = node.querySelectorAll("span");
-
-      let i = 0;
-      for (const span of spans) {
-        if (span.style.color === "rgb(0, 0, 0)") span.style.color = "";
-        if (span.style.color === "rgb(40, 50, 78)")
-          span.style.color = "rgb(135, 163, 239)";
-        i++;
-      }
+    function onChange() {
+      setIsLoaded(false);
+      setIsSubmitted(!threadUrl);
+      setCurrentY(undefined);
     },
-    [currentY, years]
+    [threadUrl, user]
   );
-
+  const [years, setYears] = useState<Years>({});
+  const [currentY, setCurrentY] = useState<number | undefined>();
+  let postCountByUserName: Record<string, number> | undefined;
+  const currentPosts = useMemo(() => {
+    if (currentY) {
+      const posts = years[currentY];
+      if (user === "*") {
+        postCountByUserName = posts.reduce(
+          (acc: Record<string, number>, post) => {
+            return {
+              ...acc,
+              [post.user]: (acc[post.user] || 0) + 1
+            };
+          },
+          {}
+        );
+      }
+      return posts;
+    }
+    return [];
+  }, [currentY, years]);
   useEffect(() => {
-    (async function scrape() {
-      const { data } = await axios.get(
-        "/api/scrape?id=" + threadId + "&url=" + threadUrl
-      );
-      //if (data === "done") setRefresh(!refresh);
-    })();
-  }, [threadId, threadUrl]);
+    if (currentPosts.length > 0) {
+      transformDOM();
+    }
+  }, [currentPosts]);
 
-  if (isLoading) return "Loading";
+  async function fetchAndProcess() {
+    let res;
+    if (process.env.NODE_ENV === "production") {
+      res = await fetch("/api/thread?id=" + threadId);
+    } else {
+      res = await fetch("/" + threadId + ".json");
+    }
 
+    const data: { posts: IPost[] } = await res.json();
+    let currentUser = user;
+    if (currentUser === "*") {
+      //currentUser = data.posts[0].user;
+      //setUser(data.posts[0].user);
+    }
+    const newYears: Years = {
+      2021: [],
+      2022: [],
+      2023: [],
+      2024: []
+    };
+
+    for (const post of data.posts) {
+      if (
+        currentUser !== "" &&
+        currentUser !== "*" &&
+        post.user.toLowerCase() !== currentUser.toLowerCase()
+      )
+        continue;
+      if (isAfter(parseISO(post.date), d2024)) newYears[2024].push(post);
+      else if (isAfter(parseISO(post.date), d2023)) newYears[2023].push(post);
+      else if (isAfter(parseISO(post.date), d2022)) newYears[2022].push(post);
+      else if (isAfter(parseISO(post.date), d2021)) newYears[2021].push(post);
+    }
+
+    setYears(newYears);
+    setIsLoaded(true);
+  }
+
+  function transformDOM() {
+    //if (!Object.keys(years).length) return;
+
+    const main = document.querySelector("main");
+    const node = main || document;
+
+    const divs = node.querySelectorAll("div");
+    for (const div of divs) {
+      if (div.style["text-align"] === "center") {
+        div.style.background = "transparent";
+        div.style.padding = 0;
+      }
+    }
+
+    const imgs = node.querySelectorAll("img");
+
+    for (const img of imgs) {
+      img.loading = "eager";
+      if (img.src.includes("proxy")) {
+        let srcWithoutProxy = decodeURIComponent(
+          img.src.substring(44, img.src.length)
+        );
+
+        const matches = srcWithoutProxy.match(/[^&]+/g);
+        if (matches) {
+          img.src = matches[0];
+        }
+      }
+    }
+
+    // const iframes = node.querySelectorAll("iframe");
+
+    // for (let iframe of iframes) {
+    //   iframe.style["display"] = "none";
+    // }
+
+    const links = node.querySelectorAll("a");
+
+    for (const link of links) {
+      if (!link.textContent) continue;
+      if (!link.title.includes("post") && !link.title.includes("Go to top"))
+        link.target = "_blank";
+      if (link.textContent.length > 20) {
+        link.textContent = link.textContent?.substring(0, 19) + "...";
+      } else if (link.textContent === "Click to expand...")
+        link.textContent = "";
+      else if (link.href.includes("goto")) {
+        const matches = link.href.match(/forum.+/);
+        if (matches) {
+          link.href = "https://cassiopaea.org/" + matches[0];
+        }
+      }
+    }
+
+    const spans = node.querySelectorAll("span");
+
+    let i = 0;
+    for (const span of spans) {
+      if (span.style.color === "rgb(0, 0, 0)") span.style.color = "";
+      if (span.style.color === "rgb(40, 50, 78)")
+        span.style.color = "rgb(135, 163, 239)";
+      i++;
+    }
+  }
+
+  const isLoading = isSubmitted && !isLoaded;
+  console.log("🚀 ~ App ~ isLoading:", isLoading);
   return (
     <div
       id="top"
@@ -179,25 +207,29 @@ function App() {
         h1 {
           font-size: 2rem;
           color: purple;
-          /*margin: 24px 0;*/
         }
         h2,
         label {
           color: blue;
           font-size: 1.5rem;
           button {
-            margin-top: 24px;
+            background-color: blue;
           }
         }
         hr {
           border-top-width: 10px;
-          border-color: black;
+          border-color: ${theme === "dark" ? "white" : "black"};
         }
         input {
-          ${theme === "light" ? "border: 1px solid black" : ""};
+          border-width: 1px;
           color: black;
           border-radius: 36px;
           text-align: center;
+        }
+
+        nav {
+          display: flex;
+          flex-direction: column;
         }
 
         header {
@@ -205,8 +237,6 @@ function App() {
           flex-direction: column;
 
           nav {
-            display: flex;
-            flex-direction: column;
             input {
               padding: 12px;
             }
@@ -219,11 +249,7 @@ function App() {
           }
         }
 
-        main {
-          margin: 0 auto;
-        }
-
-        & > ul > li {
+        /*& > ul > li {
           background-color: hsl(var(--card-foreground));
           text-align: left;
           padding: 12px;
@@ -234,7 +260,7 @@ function App() {
             padding: 24px 0;
             margin-bottom: 24px;
           }
-        }
+        }*/
         .contentRow-minor--hideLinks,
         .js-unfurl-desc,
         .js-unfurl-figure {
@@ -251,6 +277,7 @@ function App() {
         `}
       >
         <button
+          title={`Click to toggle ${theme === "dark" ? "light" : "dark"} mode`}
           data-key={theme}
           onClick={() =>
             setTheme(theme === "dark" || theme === "system" ? "light" : "dark")
@@ -289,131 +316,226 @@ function App() {
       </div>
 
       <header>
-        <div style={{ margin: "0 auto", textAlign: "center" }}>
+        <div
+          style={{
+            margin: "0 auto",
+            textAlign: "center",
+            marginBottom: "12px"
+          }}
+        >
           <h1>Cassiopaea Forum</h1>
-          <h1>Mobile friendly browsing</h1>
+          <h1>Mobile friendly navigator</h1>
         </div>
 
         <hr />
 
-        <nav style={{ margin: "0 auto" }}>
-          <label>Enter thread url</label>
+        <nav style={{ margin: "24px auto" }}>
+          <label>Thread url</label>
           <input
             type="text"
-            defaultValue={threadUrl}
-            style={{ marginRight: "12px" }}
-            onBlur={() => {
-              setIsDisabled(true);
-              setRefresh(!refresh);
-            }}
+            value={threadUrl}
+            style={{ margin: "12px 0" }}
             onChange={(event) => {
-              setIsDisabled(false);
               setThreadUrl(event.target.value);
             }}
           />
+          <button
+            style={{ margin: "0 0 24px 0" }}
+            onClick={() => {
+              setThreadUrl("");
+            }}
+          >
+            Clear
+          </button>
 
-          <label>Enter username</label>
-          <div style={{ display: "flex" }}>
+          <label>Filter by username?</label>
+          <div style={{ display: "flex", margin: "12px 0 24px 0" }}>
             <input
               type="text"
               value={user}
               style={{ marginRight: "12px" }}
-              onBlur={() => {
-                setIsDisabled(true);
-                setRefresh(!refresh);
-              }}
               onChange={(event) => {
-                setIsDisabled(false);
                 setUser(event.target.value);
               }}
             />
-            <button
-              onClick={() => {
-                setUser("*");
-                setIsDisabled(false);
-                setRefresh(!refresh);
-              }}
-            >
-              Reset username
-            </button>
+            {user !== "*" && (
+              <button
+                onClick={() => {
+                  setUser("*");
+                }}
+              >
+                All users
+              </button>
+            )}
           </div>
 
-          <label>Pick year</label>
-          {Object.keys(years).map((key) => {
-            const year = Number(key);
-            const len = years[year].length;
-            if (!len) return null;
-            return (
-              <button
-                key={year}
-                style={{ marginBottom: "12px", marginRight: "12px" }}
-                onClick={() => handleClick(year)}
-                data-key={year === currentY ? "active" : ""}
-              >
-                {year} ({len} post{len > 1 ? "s" : ""})
-              </button>
-            );
-          })}
+          {!isLoaded && (
+            <button
+              type="submit"
+              data-key={isSubmitted ? "disabled" : "undefined"}
+              disabled={isSubmitted}
+              style={{
+                backgroundColor: "green"
+              }}
+              onClick={async () => {
+                if (threadId && threadUrl) {
+                  setIsSubmitted(true);
+                  setIsLoaded(false);
+                  await axios.get(
+                    "/api/scrape?id=" + threadId + "&url=" + threadUrl
+                  );
+                  await fetchAndProcess();
+                }
+              }}
+            >
+              Next
+            </button>
+          )}
 
-          {currentPosts.length > 0 && (
-            <>
-              <label>Pick date or user</label>
+          {isLoading
+            ? "Loading ..."
+            : isLoaded && (
+                <>
+                  <label style={{ marginBottom: "12px" }}>Filter by year</label>
+                  {Object.keys(years).map((key) => {
+                    const year = Number(key);
+                    const len = years[year].length;
+                    if (!len) return null;
+                    return (
+                      <button
+                        key={year}
+                        style={{ marginBottom: "12px", marginRight: "12px" }}
+                        onClick={() => setCurrentY(year)}
+                        data-key={year === currentY ? "active" : ""}
+                      >
+                        {year} ({len} post{len > 1 ? "s" : ""})
+                      </button>
+                    );
+                  })}
+                </>
+              )}
+        </nav>
+      </header>
+
+      {currentPosts.length > 0 && (
+        <>
+          <hr />
+          <nav>
+            {postCountByUserName && (
+              <>
+                <h1>Users in {currentY}</h1>
+                <ol>
+                  {Object.keys(postCountByUserName)
+                    .sort((userNameA, userNameB) => {
+                      const countA = postCountByUserName[userNameA];
+                      const countB = postCountByUserName[userNameB];
+                      return countA < countB ? 1 : -1;
+                    })
+                    .map((userName) => {
+                      return (
+                        <li>
+                          <button
+                            data-key={user === userName ? "active" : ""}
+                            style={{ marginBottom: "12px" }}
+                            onClick={() => {
+                              if (user === userName) {
+                                setUser("");
+                              } else {
+                                setUser(userName);
+                              }
+                            }}
+                          >
+                            {userName} ({postCountByUserName[userName]})
+                          </button>
+                        </li>
+                      );
+                    })}
+                </ol>
+              </>
+            )}
+          </nav>
+        </>
+      )}
+
+      {currentPosts.length > 0 && (
+        <>
+          <hr />
+
+          <nav>
+            <h1>
+              Posts
+              {!!user && user !== "*" ? ` by ${user}` : ""} in {currentY}
+            </h1>
+            <ul>
+              {currentPosts.map((post, index) => {
+                return (
+                  <li key={`item-${index}`}>
+                    <a href={`#${index}`}>
+                      <button
+                        key={index}
+                        style={{
+                          marginBottom: "12px",
+                          marginRight: "12px"
+                        }}
+                      >
+                        {format(post.date, "d MMMM yyyy")}
+                      </button>
+                    </a>
+                    {(!user || user === "*") && (
+                      <>
+                        by
+                        <button
+                          data-key={user === post.user ? "active" : ""}
+                          style={{
+                            marginBottom: "12px",
+                            marginLeft: "12px"
+                          }}
+                          onClick={() => {
+                            if (user === post.user) {
+                              setUser("");
+                            } else {
+                              setUser(post.user);
+                            }
+                          }}
+                        >
+                          {post.user}
+                          {/* {
+                              currentPosts.filter(
+                                ({ user }) => user === post.user
+                              ).length
+                            } */}
+                        </button>
+                      </>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+
+          <hr />
+
+          <main>
+            {currentPosts.length > 0 && (
               <ul>
                 {currentPosts.map((post, index) => {
                   return (
-                    <li>
-                      <a href={`/#${index}`}>
-                        <button key={index}>
-                          {format(post.date, "d MMMM yyyy")}
-                        </button>
-                      </a>
-                      <button
-                        data-key={user === post.user ? "active" : ""}
-                        style={{ marginBottom: "12px", marginLeft: "12px" }}
-                        onClick={() => {
-                          if (user === post.user) {
-                            setUser("");
-                          } else {
-                            setUser(post.user);
-                          }
-                          setRefresh(!refresh);
-                        }}
-                      >
-                        {post.user} (
-                        {
-                          currentPosts.filter(({ user }) => user === post.user)
-                            .length
-                        }
-                        )
-                      </button>
-                    </li>
+                    <React.Fragment key={`post-${index}`}>
+                      <Post
+                        post={post}
+                        index={index}
+                        isLast={index === currentPosts.length - 1}
+                        setUser={setUser}
+                      />
+                      <hr />
+                    </React.Fragment>
                   );
                 })}
               </ul>
-            </>
-          )}
-        </nav>
-        <hr />
-      </header>
-
-      <main>
-        {currentPosts.length > 0 && (
-          <ul>
-            {currentPosts.map((post, index) => {
-              return (
-                <React.Fragment key={`post-${index}`}>
-                  <Post
-                    post={post}
-                    index={index}
-                    isLast={index === currentPosts.length - 1}
-                  />
-                  <hr />
-                </React.Fragment>
-              );
-            })}
-          </ul>
-        )}
-      </main>
+            )}
+          </main>
+        </>
+      )}
     </div>
   );
 }
