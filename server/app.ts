@@ -4,6 +4,7 @@ import cors from "cors";
 import express, { Router, Request, Response } from "express";
 import fs from "fs";
 import https from "https";
+import { TypedRequestQuery } from "./types";
 
 const agent = new https.Agent({
   rejectUnauthorized: false,
@@ -16,12 +17,6 @@ const client = axios.create({
   httpsAgent: agent,
   timeout: 60000
 });
-
-interface RequestParams {}
-
-interface ResponseBody {}
-
-interface RequestBody {}
 
 class App {
   public router: Router = express.Router();
@@ -86,6 +81,25 @@ class App {
         return res.status(400).send(error);
       }
     });
+
+    this.router.get(
+      "/html",
+      async (req: TypedRequestQuery<{ url: string }>, res: Response) => {
+        try {
+          if (!req.query.url) throw new Error("Missing url");
+          async function getHtml(url: string) {
+            const { data } = await client.get(url);
+            return data;
+          }
+
+          const html = await getHtml(req.query.url);
+
+          return res.status(200).json({ html });
+        } catch (error) {
+          return res.status(400).send(error);
+        }
+      }
+    );
   }
 }
 

@@ -63,5 +63,10 @@
 */
 
 @media (min-width: 320px) and (max-width: 480px) {
+  nav {
+    margin: 0 auto;
+    max-width: 320px;
+    min-width: 320px;
+  }
 }
 

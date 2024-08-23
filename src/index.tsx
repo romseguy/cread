@@ -1,8 +1,6 @@
-import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import { css } from "twin.macro";
-import { Theme, ThemeProvider, useTheme } from "@/components/theme-provider";
+import { ThemeProvider } from "@/components/theme-provider";
 import App from "./App";
 import "./index.css";
 

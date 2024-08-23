@@ -15,20 +15,22 @@ export const Post = ({
   post,
   index,
   isLast,
+  user,
   setUser
 }: {
   post: IPost;
   index: number;
   isLast: boolean;
+  user: string;
   setUser: (value: React.SetStateAction<string>) => void;
 }) => {
   const [isShow, setIsShow] = useState(false);
   const { id, date } = post;
-  let text = post.text.replace(/\*+/g, "<hr/>");
+  let text = post.text.replace(/[\*]+/g, "<hr/>");
   text = text.replace(/<br \/><br \/><br \/>/g, "<br/>");
   const urlR = /https?:\/\/[^\s$.?#].[^"\s]*/gi;
-  let arr = text.match(urlR);
-  arr = arr?.reduce((acc, val, index) => {
+  let needles = text.match(urlR);
+  const urls = needles?.reduce<string[]>((acc, val, index) => {
     if (!acc.includes(val)) {
       acc.push(val);
     }
@@ -59,8 +61,12 @@ export const Post = ({
           </div>
 
           <div>
-            <a href={"#top"} title="Click to go to top">
-              <button>Back to top ^</button>
+            <a href={"#posts"} title="Click to go to top">
+              <button>
+                {user !== "*"
+                  ? "Back to posts by " + user
+                  : "Back to posts list"}
+              </button>
             </a>
           </div>
         </h2>
@@ -93,7 +99,7 @@ export const Post = ({
         </button>
       </li>
       <li dangerouslySetInnerHTML={{ __html: text }} />
-      {Array.isArray(arr) && (
+      {Array.isArray(urls) && (
         <li>
           <button
             css={css`
@@ -106,7 +112,7 @@ export const Post = ({
           </button>
           {isShow && (
             <ol style={{ marginBottom: "12px" }}>
-              {arr.map((url, index) => {
+              {urls.map((url, index) => {
                 return (
                   <li key={`url-${index}`}>
                     <a href={`${url}`}>{url}</a>
