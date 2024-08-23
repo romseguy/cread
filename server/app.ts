@@ -39,48 +39,57 @@ class App {
       }
     });
 
-    this.router.get("/scrape", async (req: Request, res: Response) => {
-      if (!req.query.id) return res.status(400).send(new Error("missing id"));
-      if (!req.query.url) return res.status(400).send(new Error("missing url"));
-      console.log("GET /scrape ~ query :", req.query);
+    this.router.get(
+      "/scrape",
+      async (
+        req: TypedRequestQuery<{ id: string; url: string; force?: string }>,
+        res: Response
+      ) => {
+        const prefix = `🚀 ~ ${new Date().toLocaleString()} ~ GET /scrape `;
 
-      let __dir;
-      let __path = new URL(`../public/${req.query.id}.json`, import.meta.url)
-        .pathname;
-      let __scriptPath = new URL(`./script.sh`, import.meta.url).pathname;
+        if (!req.query.id) return res.status(400).send(new Error("missing id"));
+        if (!req.query.url)
+          return res.status(400).send(new Error("missing url"));
+        console.log(prefix + "query :", req.query);
 
-      if (process.env.NODE_ENV === "production") {
-        __dir = "/var/www/lbf-api/files/";
-        __path = __dir + req.query.id + ".json";
-        __scriptPath = "/var/www/cread/server/script.sh";
+        let __dir = new URL("../public", import.meta.url).pathname;
+        let __path = __dir + "/" + req.query.id + ".json";
+        let __scriptPath = new URL(`./script.sh`, import.meta.url).pathname;
+
+        if (process.env.NODE_ENV === "production") {
+          __dir = "/var/www/lbf-api/files/";
+          __path = __dir + req.query.id + ".json";
+          __scriptPath = "/var/www/cread/server/script.sh";
+        }
+
+        const exist = fs.existsSync(__path);
+
+        if (exist && !req.query.force) {
+          console.log(prefix + "already scraped: ", __path);
+          return res
+            .status(200)
+            .send({ data: req.query.id + " already scraped" });
+        }
+
+        console.log(prefix + "downloading: ", __path);
+
+        try {
+          const stdout = cp.execSync(
+            `"${__scriptPath}" ${__dir} ${req.query.url} ${req.query.id}`,
+            { encoding: "utf8" }
+          );
+
+          console.log(prefix + "stdout: ", stdout);
+
+          return res.status(200).json({
+            data: stdout
+          });
+        } catch (error) {
+          console.error("🚀 ~ error:", error);
+          return res.status(400).send(error);
+        }
       }
-
-      const exist = fs.existsSync(__path);
-      console.log("🚀 ~ exist:", exist, __path);
-
-      if (exist)
-        return res
-          .status(200)
-          .send({ data: req.query.id + " already scraped" });
-
-      console.log("🚀 ~ downloading ~ __path:", __path);
-
-      try {
-        const stdout = cp.execSync(
-          `"${__scriptPath}" ${__dir} ${req.query.url} ${req.query.id}`,
-          { encoding: "utf8" }
-        );
-
-        console.log("🚀 ~ stdout:", stdout);
-
-        return res.status(200).json({
-          data: stdout
-        });
-      } catch (error) {
-        console.error("🚀 ~ error:", error);
-        return res.status(400).send(error);
-      }
-    });
+    );
 
     this.router.get(
       "/html",

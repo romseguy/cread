@@ -33,6 +33,7 @@ interface IThread {
 function App() {
   const [search, setSearch] = useSearchParams();
   const { theme, setTheme } = useTheme();
+  const [isForce, setIsForce] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const initialThreadUrl = search.get("t") || "";
@@ -46,7 +47,7 @@ function App() {
       setIsSubmitted(false);
       setCurrentY(undefined);
     },
-    [threadUrl, user]
+    [threadUrl, user, isForce]
   );
   const [years, setYears] = useState<Years>({});
   const [currentY, setCurrentY] = useState<number | undefined>();
@@ -457,6 +458,51 @@ function App() {
                   margin: "0 0 24px 0"
                 }}
                 css={css`
+                  & > * {
+                    margin-right: 12px;
+                  }
+                  @media (min-width: 320px) and (max-width: 480px) {
+                    flex-direction: column;
+                    & > button {
+                      margin-top: 12px;
+                    }
+                    & > input {
+                      width: 100%;
+                    }
+                  }
+                `}
+              >
+                <label
+                  style={{
+                    color: theme === "dark" ? "white" : "black"
+                  }}
+                >
+                  Optional:
+                </label>
+                <label>download thread again?</label>
+                <label
+                  style={{
+                    color: theme === "dark" ? "white" : "black"
+                  }}
+                >
+                  (will take longer)
+                </label>
+                <input
+                  type="checkbox"
+                  value={isForce}
+                  onChange={() => {
+                    setIsForce(!isForce);
+                  }}
+                />
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  margin: "0 0 24px 0"
+                }}
+                css={css`
                   @media (min-width: 320px) and (max-width: 480px) {
                     flex-direction: column;
                     & > button {
@@ -508,7 +554,9 @@ function App() {
                     setIsSubmitted(true);
                     setIsLoaded(false);
                     await axios.get(
-                      "/api/scrape?id=" + threadId + "&url=" + threadUrl
+                      `/api/scrape?id=${threadId}&url=${threadUrl}${
+                        isForce ? "&force=true" : ""
+                      }`
                     );
                     await fetchAndProcess();
                     setIsLoaded(true);
@@ -577,9 +625,9 @@ function App() {
                       const countB = postCountByUserName[userNameB];
                       return countA < countB ? 1 : -1;
                     })
-                    .map((userName) => {
+                    .map((userName, index) => {
                       return (
-                        <li>
+                        <li key={`user-${index}`}>
                           <button
                             data-key={user === userName ? "active" : ""}
                             style={{ marginBottom: "12px" }}

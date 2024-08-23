@@ -24,6 +24,4 @@ package-lock.json
 *.njsproj
 *.sln
 *.sw?
-
-public/posts
-public/old
+public/*.json
