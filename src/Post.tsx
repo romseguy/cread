@@ -16,13 +16,15 @@ export const Post = ({
   index,
   isLast,
   user,
-  setUser
+  setUser,
+  showBackButton = true
 }: {
   post: IPost;
   index: number;
   isLast: boolean;
   user: string;
   setUser: (value: React.SetStateAction<string>) => void;
+  showBackButton?: boolean;
 }) => {
   const [isShow, setIsShow] = useState(false);
   const { id, date } = post;
@@ -42,6 +44,7 @@ export const Post = ({
       <li style={{ paddingBottom: "24px" }}>
         <h2 style={{ display: "flex", justifyContent: "space-between" }}>
           <div>
+            {/* Previous */}
             {index !== 0 && (
               <a
                 href={"#" + Number(index - 1)}
@@ -50,6 +53,7 @@ export const Post = ({
                 <button style={{ marginRight: "24px" }}>{"<"} Previous</button>
               </a>
             )}
+            {/* Next */}
             {!isLast && (
               <a
                 href={"#" + Number(index + 1)}
@@ -60,15 +64,17 @@ export const Post = ({
             )}
           </div>
 
-          <div>
-            <a href={"#posts"} title="Click to go to top">
-              <button>
-                {user !== "*"
-                  ? "Back to posts by " + user
-                  : "Back to posts list"}
-              </button>
-            </a>
-          </div>
+          {showBackButton && (
+            <div>
+              <a href={"#posts"} title="Click to go to top">
+                <button>
+                  {user !== "*"
+                    ? "Back to posts by " + user
+                    : "Back to posts list"}
+                </button>
+              </a>
+            </div>
+          )}
         </h2>
         <h1 style={{ margin: "24px 0" }}>
           <a

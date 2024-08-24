@@ -6,6 +6,7 @@ import { useTheme } from "./components/theme-provider";
 import "./App.css";
 import { IPost, Post } from "./Post";
 import axios from "axios";
+import { Posts } from "./Posts";
 //const data = import.meta.glob("./assets/t.json");
 
 const initialThreadUrls = [
@@ -31,51 +32,64 @@ interface IThread {
 }
 
 function App() {
-  const [search, setSearch] = useSearchParams();
   const { theme, setTheme } = useTheme();
-  const [isForce, setIsForce] = useState(false);
+  const [search, setSearch] = useSearchParams();
+
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  //#region field : enter thread url
   const initialThreadUrl = search.get("t") || "";
   const [threadUrl, setThreadUrl] = useState(initialThreadUrl);
   const tmatches = threadUrl?.match(/\.([0-9]+)/);
   const threadId = tmatches ? tmatches[1] : undefined;
+  //#region field : download thread again
+  const [isForce, setIsForce] = useState(false);
+  //#region field : enter username
   const [user, setUser] = useState(search.get("u") || "*");
   useEffect(
-    function onChange() {
+    function onFieldChange() {
       setIsLoaded(false);
       setIsSubmitted(false);
       setCurrentY(undefined);
+      setYears({});
+      setCurrentPosts([]);
     },
     [threadUrl, user, isForce]
   );
+
+  //#region filter : year
   const [years, setYears] = useState<Years>({});
   const [currentY, setCurrentY] = useState<number | undefined>();
-  let postCountByUserName: Record<string, number> | undefined;
-  const currentPosts = useMemo(() => {
+  const [currentPosts, setCurrentPosts] = useState<IPost[]>([]);
+  useEffect(() => {
     if (currentY) {
-      const posts = years[currentY];
+      if (years[currentY].length > 0) {
+        setCurrentPosts(years[currentY]);
+      }
+    }
+  }, [currentY, years]);
+
+  //#region filter : user
+  const [postCountByUserName, setPostCountByUserName] = useState<
+    Record<string, number>
+  >({});
+  useEffect(() => {
+    if (currentPosts.length > 0) {
       if (user === "*") {
-        postCountByUserName = posts.reduce(
-          (acc: Record<string, number>, post) => {
+        setPostCountByUserName(
+          currentPosts.reduce((acc: Record<string, number>, post) => {
             return {
               ...acc,
               [post.user]: (acc[post.user] || 0) + 1
             };
-          },
-          {}
+          }, {})
         );
       }
-      return posts;
     }
-    return [];
-  }, [currentY, years]);
-  useEffect(() => {
-    if (currentPosts.length > 0) {
-      transformDOM();
-    }
-  }, [currentPosts]);
+  }, [currentPosts, user]);
 
+  //#region load messages
   async function fetchAndProcess() {
     let res;
     if (process.env.NODE_ENV === "production") {
@@ -86,10 +100,6 @@ function App() {
 
     const data: { posts: IPost[] } = await res.json();
     let currentUser = user;
-    if (currentUser === "*") {
-      //currentUser = data.posts[0].user;
-      //setUser(data.posts[0].user);
-    }
     const newYears: Years = {
       2021: [],
       2022: [],
@@ -113,93 +123,58 @@ function App() {
     setYears(newYears);
   }
 
-  function transformDOM() {
-    //if (!Object.keys(years).length) return;
-
-    const main = document.querySelector("main");
-    const node = main || document;
-
-    const divs = node.querySelectorAll("div");
-    for (const div of divs) {
-      //@ts-expect-error
-      if (div.style["text-align"] === "center") {
-        div.style.background = "transparent";
-        //@ts-expect-error
-        div.style.padding = 0;
-      }
+  const [isThreadsLoading, setIsThreadsLoading] = useState(false);
+  const [threads, setThreads] = useState<IThread[] | undefined>([
+    {
+      url: "https://cassiopaea.org/forum/threads/alton-towers-sir-francis-bacon-and-the-rosicrucians.50391",
+      title: "Alton Towers, Sir Francis Bacon and the Rosicrucians"
+    },
+    {
+      url: "https://cassiopaea.org/forum/threads/session-13-january-2024.54173/",
+      title: "Session 13 January 2024"
+    },
+    {
+      url: "https://cassiopaea.org/forum/threads/session-9-march-2024.54385/",
+      title: "Session 9 March 2024"
+    },
+    {
+      url: "https://cassiopaea.org/forum/threads/session-13-april-2024.54519/",
+      title: "Session 13 April 2024"
+    },
+    {
+      url: "https://cassiopaea.org/forum/threads/session-27-april-2024.54602/",
+      title: "Session 27 April 2024"
+    },
+    {
+      url: "https://cassiopaea.org/forum/threads/session-18-may-2024.54672/",
+      title: "Session 18 May 2024"
+    },
+    {
+      url: "https://cassiopaea.org/forum/threads/session-6-july-2024.54848",
+      title: "Session 6 July 2024"
+    },
+    {
+      url: "https://cassiopaea.org/forum/threads/session-17-august-2024.55015/",
+      title: "Session 17 August 2024"
     }
-
-    const imgs = node.querySelectorAll("img");
-
-    for (const img of imgs) {
-      img.loading = "eager";
-      if (img.src.includes("proxy")) {
-        let srcWithoutProxy = decodeURIComponent(
-          img.src.substring(44, img.src.length)
-        );
-
-        const matches = srcWithoutProxy.match(/[^&]+/g);
-        if (matches) {
-          img.src = matches[0];
-        }
-      }
-    }
-
-    // const iframes = node.querySelectorAll("iframe");
-
-    // for (let iframe of iframes) {
-    //   iframe.style["display"] = "none";
-    // }
-
-    const links = node.querySelectorAll("a");
-
-    for (const link of links) {
-      const exclude = link.title.includes("Click to go to top");
-
-      if (!link.textContent) continue;
-      if (!link.title.includes("post") && !exclude) link.target = "_blank";
-      if (link.textContent.length > 20 && !exclude) {
-        link.textContent = link.textContent?.substring(0, 19) + "...";
-      } else if (link.textContent === "Click to expand...")
-        link.textContent = "";
-      else if (link.href.includes("goto")) {
-        const matches = link.href.match(/forum.+/);
-        if (matches) {
-          link.href = "https://cassiopaea.org/" + matches[0];
-        }
-      }
-    }
-
-    const spans = node.querySelectorAll("span");
-
-    let i = 0;
-    for (const span of spans) {
-      if (span.style.color === "rgb(0, 0, 0)") span.style.color = "";
-      if (span.style.color === "rgb(40, 50, 78)")
-        span.style.color = "rgb(135, 163, 239)";
-      i++;
-    }
-  }
-
-  const [isThreadsLoading, setIsThreadsLoading] = useState(true);
-  const [threads, setThreads] = useState<IThread[] | undefined>();
-  useEffect(() => {
-    (async () => {
-      if (!threads) {
-        let arr: IThread[] = [];
-        for (const url of initialThreadUrls) {
-          const { data } = await axios.get("/api/html?url=" + url);
-          if (data?.html) {
-            const doc = new DOMParser().parseFromString(data.html, "text/html");
-            const title = doc.querySelectorAll("title")[0].innerText;
-            arr = [...arr, ...[{ url, title }]];
-          }
-        }
-        setThreads(arr);
-        setIsThreadsLoading(false);
-      }
-    })();
-  }, [threads]);
+  ]);
+  // useEffect(() => {
+  //   (async () => {
+  //     if (!threads) {
+  //       let arr: IThread[] = [];
+  //       for (const url of initialThreadUrls) {
+  //         const { data } = await axios.get("/api/html?url=" + url);
+  //         if (data?.html) {
+  //           const doc = new DOMParser().parseFromString(data.html, "text/html");
+  //           const title = doc.querySelectorAll("title")[0].innerText;
+  //           arr = [...arr, ...[{ url, title }]];
+  //         }
+  //       }
+  //       setThreads(arr);
+  //       setIsThreadsLoading(false);
+  //     }
+  //   })();
+  // }, [threads]);
 
   return (
     <div
@@ -401,7 +376,7 @@ function App() {
               })}
             </ul>
           )}
-
+          {/* Enter thread url */}
           <div
             css={css`
               display: flex;
@@ -448,7 +423,7 @@ function App() {
               </button>
             )}
           </div>
-
+          {/* Download thread again? */}
           {threadUrl && (
             <>
               <div
@@ -542,40 +517,44 @@ function App() {
                 )}
               </div>
 
-              <button
-                type="submit"
-                data-key={isSubmitted ? "disabled" : "undefined"}
-                disabled={isSubmitted}
-                style={{
-                  backgroundColor: "green"
-                }}
-                onClick={async () => {
-                  if (threadId && threadUrl) {
-                    setIsSubmitted(true);
-                    setIsLoaded(false);
-                    await axios.get(
-                      `/api/scrape?id=${threadId}&url=${threadUrl}${
-                        isForce ? "&force=true" : ""
-                      }`
-                    );
-                    await fetchAndProcess();
-                    setIsLoaded(true);
+              {!isLoaded && (
+                <button
+                  type="submit"
+                  data-key={
+                    Object.keys(years).length > 0 ? "disabled" : "undefined"
                   }
-                }}
-              >
-                {user !== "*"
-                  ? "Load messages by " + user
-                  : "Load all messages"}
-              </button>
+                  disabled={Object.keys(years).length > 0}
+                  style={{
+                    backgroundColor: "green"
+                  }}
+                  onClick={async () => {
+                    if (threadId && threadUrl) {
+                      setIsSubmitted(true);
+                      //setIsLoaded(false);
+                      await axios.get(
+                        `/api/scrape?id=${threadId}&url=${threadUrl}${
+                          isForce ? "&force=true" : ""
+                        }`
+                      );
+                      await fetchAndProcess();
+                      setIsLoaded(true);
+                    }
+                  }}
+                >
+                  {user !== "*"
+                    ? `${isForce ? "Load" : "View"} messages by ${user}`
+                    : `${isForce ? "Load" : "View"} all messages`}
+                </button>
+              )}
             </>
           )}
-
-          {!isLoaded && isSubmitted && <>Loading messages, please wait...</>}
-
+          {/* Pick a year */}
           {isLoaded && (
             <div
               css={css`
+                border-top: 5px solid ${theme === "dark" ? "white" : "black"};
                 margin-top: 12px;
+                padding-top: 24px;
 
                 & > * {
                   margin-right: 12px;
@@ -597,7 +576,9 @@ function App() {
                     disabled={isActive}
                     key={year}
                     style={{ marginBottom: "12px", marginRight: "12px" }}
-                    onClick={() => setCurrentY(year)}
+                    onClick={() => {
+                      setCurrentY(year);
+                    }}
                     data-key={isActive ? "active" : ""}
                   >
                     {year} ({len} post{len > 1 ? "s" : ""})
@@ -606,131 +587,61 @@ function App() {
               })}
             </div>
           )}
+          {isSubmitted && !isLoaded && <>Loading messages, please wait...</>}{" "}
         </nav>
       </header>
 
-      {currentPosts.length > 0 && (
-        <>
-          <hr />
-          <nav>
-            {postCountByUserName && (
-              <>
-                <h1>Users in {currentY}</h1>
-                <ol>
-                  {Object.keys(postCountByUserName)
-                    .sort((userNameA, userNameB) => {
-                      //@ts-expect-error
-                      const countA = postCountByUserName[userNameA];
-                      //@ts-expect-error
-                      const countB = postCountByUserName[userNameB];
-                      return countA < countB ? 1 : -1;
-                    })
-                    .map((userName, index) => {
-                      return (
-                        <li key={`user-${index}`}>
-                          <button
-                            data-key={user === userName ? "active" : ""}
-                            style={{ marginBottom: "12px" }}
-                            onClick={() => {
-                              if (user === userName) {
-                                setUser("");
-                              } else {
-                                setUser(userName);
-                              }
-                            }}
-                          >
-                            {/* @ts-expect-error */}
-                            {userName} ({postCountByUserName[userName]})
-                          </button>
-                        </li>
-                      );
-                    })}
-                </ol>
-              </>
-            )}
-          </nav>
-        </>
-      )}
-
-      {currentPosts.length > 0 && (
-        <>
-          <hr />
-
-          <nav id="posts">
-            <h1>
-              Posts
-              {!!user && user !== "*" ? ` by ${user}` : ""} in {currentY}
-            </h1>
-            <ul>
-              {currentPosts.map((post, index) => {
-                return (
-                  <li key={`item-${index}`}>
-                    <a href={`#${index}`}>
+      {user === "*" &&
+        currentPosts.length > 0 &&
+        Object.keys(postCountByUserName).length > 0 && (
+          <div>
+            <hr />
+            <nav>
+              <h1>People who posted a message in {currentY}</h1>
+              <div
+                css={css`
+                  & > * {
+                    margin-right: 6px;
+                  }
+                `}
+              >
+                {Object.keys(postCountByUserName)
+                  .sort((userNameA, userNameB) => {
+                    const countA = postCountByUserName[userNameA];
+                    const countB = postCountByUserName[userNameB];
+                    return countA < countB ? 1 : -1;
+                  })
+                  .map((userName, index) => {
+                    return (
                       <button
-                        key={index}
-                        style={{
-                          marginBottom: "12px",
-                          marginRight: "12px"
+                        key={`user-${index}`}
+                        data-key={user === userName ? "active" : ""}
+                        style={{ marginBottom: "12px" }}
+                        onClick={() => {
+                          if (user === userName) {
+                            setUser("");
+                          } else {
+                            setUser(userName);
+                          }
                         }}
                       >
-                        {format(post.date, "d MMMM yyyy")}
+                        {userName} ({postCountByUserName[userName]})
                       </button>
-                    </a>
-                    {(!user || user === "*") && (
-                      <>
-                        by
-                        <button
-                          data-key={user === post.user ? "active" : ""}
-                          style={{
-                            marginBottom: "12px",
-                            marginLeft: "12px"
-                          }}
-                          onClick={() => {
-                            if (user === post.user) {
-                              setUser("");
-                            } else {
-                              setUser(post.user);
-                            }
-                          }}
-                        >
-                          {post.user}
-                          {/* {
-                              currentPosts.filter(
-                                ({ user }) => user === post.user
-                              ).length
-                            } */}
-                        </button>
-                      </>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
+                    );
+                  })}
+              </div>
+            </nav>
+          </div>
+        )}
 
-          <hr />
-
-          <main>
-            {currentPosts.length > 0 && (
-              <ul>
-                {currentPosts.map((post, index) => {
-                  return (
-                    <React.Fragment key={`post-${index}`}>
-                      <Post
-                        post={post}
-                        index={index}
-                        isLast={index === currentPosts.length - 1}
-                        user={user}
-                        setUser={setUser}
-                      />
-                      <hr />
-                    </React.Fragment>
-                  );
-                })}
-              </ul>
-            )}
-          </main>
-        </>
+      {currentPosts.length > 0 && (
+        <Posts
+          //elementToScrollRef={elementToScrollRef}
+          user={user}
+          currentY={currentY}
+          currentPosts={currentPosts}
+          setUser={setUser}
+        />
       )}
     </div>
   );
