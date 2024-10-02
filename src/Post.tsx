@@ -17,7 +17,8 @@ export const Post = ({
   isLast,
   user,
   setUser,
-  showBackButton = true
+  showBackButton = true,
+  ...props
 }: {
   post: IPost;
   index: number;
@@ -40,8 +41,9 @@ export const Post = ({
   }, []);
 
   return (
-    <div style={{ padding: "24px" }}>
+    <div {...props}>
       <li style={{ paddingBottom: "24px" }}>
+        <a name={index} />
         <h2 style={{ display: "flex", justifyContent: "space-between" }}>
           <div>
             {/* Previous */}
@@ -78,7 +80,6 @@ export const Post = ({
         </h2>
         <h1 style={{ margin: "24px 0" }}>
           <a
-            name={index}
             href={`https://cassiopaea.org/forum/goto/post?id=${id}`}
             target="_blank"
             title="Go to post"

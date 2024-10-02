@@ -7,14 +7,16 @@ export const Posts = ({
   //elementToScrollRef,
   user,
   currentY,
-  currentPosts,
-  setUser
+  currentYearPosts,
+  setUser,
+  removeFirstPostQuotes = false
 }: {
   //elementToScrollRef: React.LegacyRef<HTMLDivElement>;
   user: string;
   currentY: number;
-  currentPosts: IPost[];
+  currentYearPosts: IPost[];
   setUser: React.Dispatch<React.SetStateAction<string>>;
+  removeFirstPostQuotes?: boolean;
 }) => {
   const [executeScroll, elementToScrollRef] = useScroll<HTMLDivElement>();
 
@@ -35,6 +37,18 @@ export const Posts = ({
           div.style.background = "transparent";
           //@ts-expect-error
           div.style.padding = 0;
+        }
+      }
+
+      if (removeFirstPostQuotes) {
+        const blockquotes = node.querySelectorAll("blockquote");
+        for (const blockquote of blockquotes) {
+          if (
+            blockquote.getAttribute("data-source") ===
+            `post: ${currentYearPosts[0].id}`
+          ) {
+            blockquote.remove();
+          }
         }
       }
 
@@ -89,20 +103,24 @@ export const Posts = ({
         i++;
       }
     }
-  }, []);
+  }, [removeFirstPostQuotes]);
+
+  const postProps = {
+    style: { padding: "0 12px" }
+  };
+
   return (
     <>
-      <hr />
-
       <nav id="posts" ref={elementToScrollRef}>
-        {currentPosts.length > 1 && (
-          <>
+        {currentYearPosts.length > 1 && (
+          <div style={{ margin: "12px" }}>
             <h1>
-              All posts
-              {!!user && user !== "*" ? ` by ${user}` : ""} in {currentY}
+              {!!user && user !== "*" ? `Posts by ${user}` : "All posts"} in
+              chronological order
             </h1>
             <ul>
-              {currentPosts.map((post, index) => {
+              {currentYearPosts.map((post, index) => {
+                if (user && user !== "*" && user !== post.user) return null;
                 return (
                   <li key={`item-${index}`}>
                     <a href={`#${index}`}>
@@ -135,7 +153,7 @@ export const Posts = ({
                         >
                           {post.user}
                           {/* {
-                              currentPosts.filter(
+                              currentYearPosts.filter(
                                 ({ user }) => user === post.user
                               ).length
                             } */}
@@ -146,24 +164,25 @@ export const Posts = ({
                 );
               })}
             </ul>
-            <hr />
-          </>
+          </div>
         )}
       </nav>
 
       <main>
-        {currentPosts.length > 0 && (
+        {currentYearPosts.length > 0 && (
           <ul>
-            {currentPosts.map((post, index) => {
+            {currentYearPosts.map((post, index) => {
+              if (user && user !== "*" && user !== post.user) return null;
               return (
                 <React.Fragment key={`post-${index}`}>
                   <Post
                     post={post}
                     index={index}
-                    isLast={index === currentPosts.length - 1}
+                    isLast={index === currentYearPosts.length - 1}
                     user={user}
                     setUser={setUser}
-                    showBackButton={index > 0 && currentPosts.length > 1}
+                    showBackButton={index > 0 && currentYearPosts.length > 1}
+                    {...postProps}
                   />
                   <hr />
                 </React.Fragment>
