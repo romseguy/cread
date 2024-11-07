@@ -5,6 +5,8 @@ import express, { Router, Request, Response } from "express";
 import fs from "fs";
 import https from "https";
 import { TypedRequestQuery } from "./types";
+import dotenv from "@dotenvx/dotenvx";
+dotenv.config();
 
 const agent = new https.Agent({
   rejectUnauthorized: false,
@@ -57,7 +59,7 @@ class App {
         let __scriptPath = new URL(`./script.sh`, import.meta.url).pathname;
 
         if (process.env.NODE_ENV === "production") {
-          __dir = "/var/www/lbf-api/files/";
+          __dir = process.env.ROOT || "/var/www/lbf-api/files/";
           __path = __dir + req.query.id + ".json";
           __scriptPath = "/var/www/cread/server/script.sh";
         }
