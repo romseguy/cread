@@ -13,7 +13,7 @@ import "./index.css";
 ReactDOM.hydrateRoot(
   document.getElementById("app") as HTMLElement,
   <BrowserRouter>
-    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+    <ThemeProvider storageKey="vite-ui-theme">
       <App />
     </ThemeProvider>
   </BrowserRouter>

@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@babel/plugin-transform-react-jsx": "^7.24.7",
+    "@dotenvx/dotenvx": "^1.22.0",
     "@emotion/babel-plugin-jsx-pragmatic": "^0.3.0",
     "@emotion/react": "^11.13.0",
     "@emotion/styled": "^11.13.0",
