@@ -5,6 +5,8 @@ import express, { Router, Request, Response } from "express";
 import fs from "fs";
 import https from "https";
 import { TypedRequestQuery } from "./types";
+import dotenv from "@dotenvx/dotenvx";
+dotenv.config();
 
 const agent = new https.Agent({
   rejectUnauthorized: false,
