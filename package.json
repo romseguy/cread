@@ -1,0 +1,61 @@
+{
+  "name": "cread",
+  "type": "module",
+  "version": "0.2.0",
+  "packageManager": "bun@1.2.14",
+  "engines": {
+    "node": ">=16.x"
+  },
+  "scripts": {
+    "dev": "nodemon --watch server --watch server.ts --exec tsx server.ts",
+    "build": "bun run clean && bun run build:client && bun run build:server",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview",
+    "build:client": "vite build --outDir dist/app/client",
+    "build:server": "tsc -p tsconfig.server.json && vite build --ssr src/entry-server.tsx --outDir dist/entry",
+    "clean": "rimraf dist",
+    "serve": "cross-env NODE_ENV=production node ./dist/app/server"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@loadable/component": "^5.16.4",
+    "@types/compression": "^1.7.5",
+    "@types/cors": "^2.8.18",
+    "@types/express": "^5.0.0",
+    "@types/loadable__component": "^5.13.9",
+    "@types/node": "^22.10.10",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "@types/react-router-dom": "^5.3.3",
+    "@types/serve-static": "^1.15.7",
+    "@vitejs/plugin-react": "^4.3.4",
+    "axios": "^1.9.0",
+    "compression": "^1.7.5",
+    "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "node-fetch": "^3.3.2",
+    "nodemon": "^3.1.9",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-helmet-async": "^2.0.5",
+    "react-router-dom": "6.26.2",
+    "rimraf": "5.0.10",
+    "sass": "^1.83.4",
+    "serve-static": "1.16.2",
+    "ts-node": "^10.9.2",
+    "vite": "4.5.14"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "6.21.0",
+    "@typescript-eslint/parser": "6.21.0",
+    "eslint": "8.57.1",
+    "eslint-plugin-react-hooks": "4.6.2",
+    "eslint-plugin-react-refresh": "^0.4.18",
+    "tsx": "^4.19.4",
+    "typescript": "^5.7.3"
+  }
+}
