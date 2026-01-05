@@ -99,12 +99,11 @@ const Layout: React.FC<LayoutProps> = (props) => {
         <StyledDiv2>
           <a href="https://github.com/romseguy/cread" target="_blank">
             <svg
+              className="gh-icon"
               stroke="currentColor"
               fill={theme === "dark" ? "white" : "black"}
               strokeWidth="0"
-              height="32"
               viewBox="0 0 24 24"
-              width="32"
               focusable="false"
               aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
@@ -120,7 +119,7 @@ const Layout: React.FC<LayoutProps> = (props) => {
             //data-key={theme}
             onClick={() =>
               setTheme(
-                theme === "dark" || theme === "system" ? "light" : "dark"
+                theme === "dark" || theme === "system" ? "light" : "dark",
               )
             }
           >

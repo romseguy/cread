@@ -2,19 +2,19 @@
   "name": "cread",
   "type": "module",
   "version": "0.2.0",
-  "packageManager": "bun@1.2.14",
+  "packageManager": "pnpm@8.15.9",
   "engines": {
     "node": ">=16.x"
   },
   "scripts": {
     "dev": "nodemon --watch server --watch server.ts --exec tsx server.ts",
-    "build": "bun run clean && bun run build:client && bun run build:server",
+    "build": "pnpm run clean && pnpm run build:client && pnpm run build:server",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "build:client": "vite build --outDir dist/app/client",
     "build:server": "tsc -p tsconfig.server.json && vite build --ssr src/entry-server.tsx --outDir dist/entry",
     "clean": "rimraf dist",
-    "serve": "cross-env NODE_ENV=production node ./dist/app/server"
+    "start": "cross-env NODE_ENV=production node ./dist/app/server"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -37,6 +37,7 @@
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "express-serve-static-core": "^0.1.1",
     "node-fetch": "^3.3.2",
     "nodemon": "^3.1.9",
     "react": "^19.0.0",
