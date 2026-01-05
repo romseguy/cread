@@ -170,7 +170,7 @@ const d: Record<number, Date> = {
   2022: setYear(setDayOfYear(new Date(), 1), 2022),
   2023: setYear(setDayOfYear(new Date(), 1), 2023),
   2024: setYear(setDayOfYear(new Date(), 1), 2024),
-  2025: setYear(setDayOfYear(new Date(), 1), 2025)
+  2025: setYear(setDayOfYear(new Date(), 1), 2025),
 };
 
 type Years = Record<number, IPost[]>;
@@ -225,72 +225,72 @@ const Home: React.FC<HomeProps> = (_props) => {
   const [threads, setThreads] = useState<IThread[] | undefined>([
     {
       url: "https://cassiopaea.org/forum/threads/alton-towers-sir-francis-bacon-and-the-rosicrucians.50391/",
-      title: "Alton Towers, Sir Francis Bacon and the Rosicrucians"
+      title: "Alton Towers, Sir Francis Bacon and the Rosicrucians",
     },
     {
       url: "https://cassiopaea.org/forum/threads/language-sounds-and-intelligent-design.50868/",
-      title: "Language, Sounds and Intelligent Design"
+      title: "Language, Sounds and Intelligent Design",
     },
     {
       url: "https://cassiopaea.org/forum/threads/some-comments-on-information-theory.51198/",
-      title: "Some comments on information theory"
+      title: "Some comments on information theory",
     },
     {
       url: "https://cassiopaea.org/forum/threads/session-13-january-2024.54173/",
-      title: "Session 13 January 2024"
+      title: "Session 13 January 2024",
     },
     {
       url: "https://cassiopaea.org/forum/threads/session-9-march-2024.54385/",
-      title: "Session 9 March 2024"
+      title: "Session 9 March 2024",
     },
     {
       url: "https://cassiopaea.org/forum/threads/session-13-april-2024.54519/",
-      title: "Session 13 April 2024"
+      title: "Session 13 April 2024",
     },
     {
       url: "https://cassiopaea.org/forum/threads/session-27-april-2024.54602/",
-      title: "Session 27 April 2024"
+      title: "Session 27 April 2024",
     },
     {
       url: "https://cassiopaea.org/forum/threads/session-18-may-2024.54672/",
-      title: "Session 18 May 2024"
+      title: "Session 18 May 2024",
     },
     {
       url: "https://cassiopaea.org/forum/threads/session-6-july-2024.54848",
-      title: "Session 6 July 2024"
+      title: "Session 6 July 2024",
     },
     {
       url: "https://cassiopaea.org/forum/threads/session-17-august-2024.55015/",
-      title: "Session 17 August 2024"
+      title: "Session 17 August 2024",
     },
     {
       url: "https://cassiopaea.org/forum/threads/session-21-september-2024.55160/",
-      title: "Session 21 September 2024"
+      title: "Session 21 September 2024",
     },
     {
       url: "https://cassiopaea.org/forum/threads/session-23-november-2024.55329/",
-      title: "Session 23 November 2024"
+      title: "Session 23 November 2024",
     },
     {
       url: "https://cassiopaea.org/forum/threads/session-21-december-2024.55396/",
-      title: "Session 21 December 2024"
+      title: "Session 21 December 2024",
     },
     {
       url: "https://cassiopaea.org/forum/threads/session-25-january-2025.55484/",
-      title: "Session 25 January 2025"
+      title: "Session 25 January 2025",
     },
     {
       url: "https://cassiopaea.org/forum/threads/session-1-march-2025.55620/",
-      title: "Session 1 March 2025"
+      title: "Session 1 March 2025",
     },
     {
       url: "https://cassiopaea.org/forum/threads/session-29-march-2025.55718/",
-      title: "Session 29 March 2025"
+      title: "Session 29 March 2025",
     },
     {
       url: "https://cassiopaea.org/forum/threads/session-26-april-2025.55829/",
-      title: "Session 26 April 2025"
-    }
+      title: "Session 26 April 2025",
+    },
   ]);
   //#endregion
 
@@ -302,7 +302,7 @@ const Home: React.FC<HomeProps> = (_props) => {
       await axios.get(
         `/api/scrape?id=${threadId}&url=${threadUrl}${
           isForce ? "&force=true" : ""
-        }`
+        }`,
       );
       let res;
       if (process.env.NODE_ENV === "production") {
@@ -326,7 +326,7 @@ const Home: React.FC<HomeProps> = (_props) => {
       await axios.get(
         `/api/scrape?id=${threadId}&url=${threadUrl}${
           isForce ? "&force=true" : ""
-        }`
+        }`,
       );
 
       let res;
@@ -355,7 +355,7 @@ const Home: React.FC<HomeProps> = (_props) => {
         2022: [],
         2023: [],
         2024: [],
-        2025: []
+        2025: [],
       };
 
       let postCount = 0;
@@ -392,9 +392,9 @@ const Home: React.FC<HomeProps> = (_props) => {
         years[year].reduce((acc: Record<string, number>, post) => {
           return {
             ...acc,
-            [post.user]: (acc[post.user] || 0) + 1
+            [post.user]: (acc[post.user] || 0) + 1,
           };
-        }, {})
+        }, {}),
       );
     } else console.log("no posts found for year: ", year);
   }
@@ -514,7 +514,7 @@ const Home: React.FC<HomeProps> = (_props) => {
             <h2 style={{ margin: "24px auto" }}>
               <span
                 style={{
-                  color: theme === "dark" ? "white" : "black"
+                  color: theme === "dark" ? "white" : "black",
                 }}
               >
                 Thread :
@@ -528,7 +528,7 @@ const Home: React.FC<HomeProps> = (_props) => {
           <StyledHeader>
             <h2
               style={{
-                color: theme === "dark" ? "white" : "black"
+                color: theme === "dark" ? "white" : "black",
               }}
             >
               Reading options
@@ -593,7 +593,7 @@ const Home: React.FC<HomeProps> = (_props) => {
                     style={{
                       color: theme === "dark" ? "white" : "black",
                       fontSize: "smaller",
-                      fontStyle: "italic"
+                      fontStyle: "italic",
                     }}
                   >
                     will take longer
@@ -731,14 +731,12 @@ const Home: React.FC<HomeProps> = (_props) => {
       <StyledDiv3>
         <a href="#top">
           <svg
+            className="top-icon"
             viewBox="0 0 24 24"
             focusable="false"
             stroke="currentColor"
-            fill="white"
             strokeWidth="0"
             aria-hidden="true"
-            height="5em"
-            width="5em"
             xmlns="http://www.w3.org/2000/svg"
           >
             <path

@@ -25,6 +25,17 @@ body {
   padding: 0;
 }
 
+svg {
+  height: 1em;
+  width: 1em;
+
+  &.gh-icon,
+  &.top-icon {
+    height: 2em;
+    width: 2em;
+  }
+}
+
 #app {
   width: 100%;
 }
@@ -34,7 +45,6 @@ body {
   ##Screen = 1281px to higher resolution desktops
 */
 @media (min-width: 1281px) {
-
   main,
   nav {
     margin: 0 auto;
@@ -48,7 +58,6 @@ body {
   ##Screen = B/w 1025px to 1280px
 */
 @media (min-width: 1025px) and (max-width: 1280px) {
-
   main,
   nav {
     margin: 0 auto;
@@ -61,14 +70,14 @@ body {
   ##Device = Tablets, Ipads (portrait)
   ##Screen = B/w 768px to 1024px
 */
-@media (min-width: 768px) and (max-width: 1024px) {}
+@media (min-width: 768px) and (max-width: 1024px) {
+}
 
 /* 
   ##Device = Tablets, Ipads (landscape)
   ##Screen = B/w 768px to 1024px
 */
 @media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
-
   main,
   nav {
     margin: 0 auto;
