@@ -8,6 +8,20 @@ import { useSearchParams } from "react-router-dom";
 import { IPost } from "./Post";
 import { Posts } from "./Posts";
 //import styles from "./Home.module.scss";
+const ExternalLinkIcon = () => (
+  <svg viewBox="0 0 24 24" focusable="false">
+    <g
+      fill="none"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-width="2"
+    >
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+      <path d="M15 3h6v6"></path>
+      <path d="M10 14L21 3"></path>
+    </g>
+  </svg>
+);
 const Row = styled.div`
   display: flex;
   align-items: center;
@@ -148,10 +162,16 @@ const StyledDiv6 = styled.div`
   }
 `;
 const StyledHeader = styled.header`
+  display: flex;
+  flex-direction: column;
   & > * {
-    margin: 0 auto;
-    margin-bottom: 12px;
+    display: flex;
+    justify-content: center;
   }
+`;
+const StyledLink = styled.a`
+  display: flex;
+  align-items: center;
 `;
 
 const d: Record<number, Date> = {
@@ -291,6 +311,26 @@ const Home: React.FC<HomeProps> = (_props) => {
       url: "https://cassiopaea.org/forum/threads/session-26-april-2025.55829/",
       title: "Session 26 April 2025",
     },
+    {
+      url: "https://cassiopaea.org/forum/threads/session-28-june-2025.56103/",
+      title: "Session 28 June 2025",
+    },
+    {
+      url: "https://cassiopaea.org/forum/threads/session-23-august-2025.56847/",
+      title: "Session 23 August 2025",
+    },
+    {
+      url: "https://cassiopaea.org/forum/threads/session-27-september-2025.57008/",
+      title: "Session 27 September 2025",
+    },
+    {
+      url: "https://cassiopaea.org/forum/threads/session-1-november-2025.57241/",
+      title: "Session 1 November 2025",
+    },
+    {
+      url: "https://cassiopaea.org/forum/threads/session-6-december-2025.57461/",
+      title: "Session 6 December 2025",
+    },
   ]);
   //#endregion
 
@@ -317,6 +357,50 @@ const Home: React.FC<HomeProps> = (_props) => {
     }
   }
 
+  async function handleLoadAllByUserClick() {
+    setCurrentY(undefined);
+
+    if (threadId && threadUrl) {
+      setIsSubmitted(true);
+      await axios.get(
+        `/api/scrape?id=${threadId}&url=${threadUrl}${
+          isForce ? "&force=true" : ""
+        }`,
+      );
+
+      let res;
+      if (process.env.NODE_ENV === "production") {
+        res = await fetch("/api/thread?id=" + threadId);
+      } else {
+        res = await fetch("/" + threadId + ".json");
+      }
+
+      const data: { posts: IPost[] } = await res.json();
+      const currentUser = user;
+
+      let postCount = 0;
+      let posts = [];
+
+      for (const post of data.posts) {
+        if (
+          !post.text ||
+          (currentUser !== "" &&
+            currentUser !== "*" &&
+            post.user.toLowerCase() !== currentUser.toLowerCase())
+        )
+          continue;
+
+        posts.push(post);
+        postCount++;
+      }
+
+      setPostCount(postCount);
+      setCurrentYearPosts(posts);
+      setCanPickYear(false);
+      setIsLoaded(true);
+    }
+  }
+
   async function handleLoadClick() {
     setCurrentY(undefined);
 
@@ -338,7 +422,7 @@ const Home: React.FC<HomeProps> = (_props) => {
       const data: { posts: IPost[] } = await res.json();
       const posts = data.posts;
       //const posts = [...[removeProps(data, ["posts"])], ...data.posts];
-      let currentUser = user;
+      const currentUser = user;
       const newYears: Record<number, Record<string, any>[]> = {
         2010: [],
         2011: [],
@@ -511,16 +595,24 @@ const Home: React.FC<HomeProps> = (_props) => {
           <hr />
 
           <StyledHeader>
-            <h2 style={{ margin: "24px auto" }}>
+            <h2 style={{ display: "flex", gap: 7 }}>
               <span
                 style={{
                   color: theme === "dark" ? "white" : "black",
                 }}
               >
                 Thread :
-              </span>{" "}
-              {threads?.find(({ url }) => url === threadUrl)?.title}
+              </span>
+              <StyledLink href={threadUrl} target="_blank">
+                {threads?.find(({ url }) => url === threadUrl)?.title}
+                <ExternalLinkIcon />
+              </StyledLink>
             </h2>
+
+            <StyledLink href={threadUrl + "/latest"} target="_blank">
+              Go to latest post
+              <ExternalLinkIcon />
+            </StyledLink>
           </StyledHeader>
 
           <hr />
@@ -612,30 +704,53 @@ const Home: React.FC<HomeProps> = (_props) => {
         <nav>
           <div style={{ margin: "12px" }}>
             <div style={{ textAlign: "center" }}>
-              <button
-                type="submit"
-                data-key={isSubmitted}
-                disabled={isSubmitted}
-                onClick={handleLoadAllClick}
-                style={{ marginRight: "12px" }}
-              >
-                {isSubmitted
-                  ? "Loading messages, please wait..."
-                  : `${isForce ? "Load" : "View"} all messages at once`}
-              </button>
+              {isSubmitted ? (
+                <>
+                  {/* <Spinner /> */}
+                  Loading messages, please wait...
+                </>
+              ) : (
+                <>
+                  {user === "*" && (
+                    <button
+                      type="submit"
+                      data-key={isSubmitted}
+                      disabled={isSubmitted}
+                      onClick={handleLoadAllClick}
+                      style={{ marginRight: "12px" }}
+                    >
+                      {`${isForce ? "Load" : "View"} all messages`}
+                    </button>
+                  )}
 
-              <button
-                type="submit"
-                data-key={isSubmitted}
-                disabled={isSubmitted}
-                onClick={handleLoadClick}
-              >
-                {isSubmitted
-                  ? "Loading messages, please wait..."
-                  : user !== "*"
-                  ? `${isForce ? "Load" : "View"} messages by ${user}`
-                  : `${isForce ? "Load" : "View"} all messages by year`}
-              </button>
+                  {user !== "*" && (
+                    <button
+                      type="submit"
+                      data-key={isSubmitted}
+                      disabled={isSubmitted}
+                      onClick={handleLoadAllByUserClick}
+                      style={{ marginRight: "12px" }}
+                    >
+                      {`${
+                        isForce ? "Load" : "View"
+                      } all messages posted by ${user}`}
+                    </button>
+                  )}
+
+                  <button
+                    type="submit"
+                    data-key={isSubmitted}
+                    disabled={isSubmitted}
+                    onClick={handleLoadClick}
+                  >
+                    {user !== "*"
+                      ? `${
+                          isForce ? "Load" : "View"
+                        } messages posted by ${user} by year`
+                      : `${isForce ? "Load" : "View"} all messages by year`}
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </nav>
@@ -719,6 +834,7 @@ const Home: React.FC<HomeProps> = (_props) => {
         currentYearPosts.length > 0 && (
           <Posts
             //elementToScrollRef={elementToScrollRef}
+            postCount={postCount}
             user={user}
             currentY={currentY}
             currentYearPosts={currentYearPosts}

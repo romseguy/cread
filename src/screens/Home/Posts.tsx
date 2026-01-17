@@ -6,14 +6,16 @@ import { useTheme } from "@hooks/useTheme";
 
 export const Posts = ({
   //elementToScrollRef,
+  postCount,
   user,
   currentY,
   currentYearPosts,
   setUser,
-  removeFirstPostQuotes = false
+  removeFirstPostQuotes = false,
 }: {
   //elementToScrollRef: React.LegacyRef<HTMLDivElement>;
   user: string;
+  postCount?: number;
   currentY?: number;
   currentYearPosts: IPost[];
   setUser: React.Dispatch<React.SetStateAction<string>>;
@@ -97,7 +99,7 @@ export const Posts = ({
           <div style={{ margin: "12px" }}>
             <h1>
               {!!user && user !== "*"
-                ? `Posts by ${user}`
+                ? `${postCount} posts by ${user}`
                 : currentY
                 ? `Posts in ${currentY ? currentY + " " : ""}`
                 : "All posts"}
@@ -112,7 +114,7 @@ export const Posts = ({
                         key={index}
                         style={{
                           marginBottom: "12px",
-                          marginRight: "12px"
+                          marginRight: "12px",
                         }}
                       >
                         {format(post.date, "d MMMM yyyy")}
@@ -125,7 +127,7 @@ export const Posts = ({
                           data-key={user === post.user ? "active" : ""}
                           style={{
                             marginBottom: "12px",
-                            marginLeft: "12px"
+                            marginLeft: "12px",
                           }}
                           onClick={() => {
                             if (user === post.user) {
@@ -175,7 +177,7 @@ export const Posts = ({
                             : "rgba(255,255,255,0.1)"
                           : index % 2 === 0
                           ? "rgba(0,0,0,0.2)"
-                          : "rgba(0,0,0,0.1)"
+                          : "rgba(0,0,0,0.1)",
                     }}
                   />
                 </React.Fragment>
