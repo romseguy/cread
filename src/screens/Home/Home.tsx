@@ -335,6 +335,14 @@ const Home: React.FC<HomeProps> = (_props) => {
       url: "https://cassiopaea.org/forum/threads/session-24-january-2026.57629/",
       title: "Session 24 January 2026",
     },
+    {
+      url: "https://cassiopaea.org/forum/threads/session-28-february-2026.57708/",
+      title: "Session 28 February 2026",
+    },
+    {
+      url: "https://cassiopaea.org/forum/threads/session-21-march-2026.57771/",
+      title: "Session 21 March 2026",
+    },
   ]);
   //#endregion
 
