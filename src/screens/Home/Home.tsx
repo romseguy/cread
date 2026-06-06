@@ -1,6 +1,6 @@
-import { useTheme } from "@hooks/useTheme";
 import styled from "@emotion/styled";
 import useHelmet from "@hooks/useHelmet";
+import { useTheme } from "@hooks/useTheme";
 import axios from "axios";
 import { isAfter, parseISO, setDayOfYear, setYear } from "date-fns";
 import React, { useEffect, useState } from "react";
@@ -8,6 +8,7 @@ import { useSearchParams } from "react-router-dom";
 import { IPost } from "./Post";
 import { Posts } from "./Posts";
 //import styles from "./Home.module.scss";
+
 const ExternalLinkIcon = () => (
   <svg viewBox="0 0 24 24" focusable="false">
     <g
@@ -342,6 +343,14 @@ const Home: React.FC<HomeProps> = (_props) => {
     {
       url: "https://cassiopaea.org/forum/threads/session-21-march-2026.57771/",
       title: "Session 21 March 2026",
+    },
+    {
+      url: "https://cassiopaea.org/forum/threads/session-25-april-2026.57852/",
+      title: "Session 25 April 2026",
+    },
+    {
+      url: "https://cassiopaea.org/forum/threads/session-30-may-2026.57945/",
+      title: "Session 30 May 2026",
     },
   ]);
   //#endregion

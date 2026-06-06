@@ -1,8 +1,8 @@
+import { useTheme } from "@hooks/useTheme";
+import { useScroll } from "@lib/useScroll";
 import { format } from "date-fns";
 import React, { useEffect } from "react";
-import { useScroll } from "@lib/useScroll";
 import { IPost, Post } from "./Post";
-import { useTheme } from "@hooks/useTheme";
 
 export const Posts = ({
   //elementToScrollRef,
