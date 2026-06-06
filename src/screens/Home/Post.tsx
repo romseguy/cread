@@ -1,6 +1,6 @@
+import { css } from "@emotion/react";
 import { format } from "date-fns";
 import React, { useEffect, useState } from "react";
-import { css } from "@emotion/react";
 
 export interface IPost {
   id: number;
@@ -96,7 +96,16 @@ export const Post = ({
     //   setAttachments(attachments);
     // }
 
-    setText(newText);
+    const parser = new DOMParser();
+    //const doc = parser.parseFromString(str.replace(/&nbsp;/g, " "), "text/html");
+    const doc = parser.parseFromString(newText, "text/html");
+    const imgs = (doc.firstChild as HTMLElement).getElementsByTagName("img");
+    for (let i = 0; i < imgs.length; i++) {
+      const img = imgs[i];
+      img.classList.add("clip");
+    }
+
+    setText(doc.body.innerHTML);
   }, []);
 
   const { id, date } = post;

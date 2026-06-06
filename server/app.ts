@@ -46,22 +46,21 @@ async function getScrapeHandler(
 
   let __dir = new URL("../public", import.meta.url).pathname;
   let __path = __dir + "/" + req.query.id + ".json";
-  let __scriptPath = new URL(`./script.sh`, import.meta.url).pathname;
-
   if (process.env.NODE_ENV === "production") {
     __dir = "/var/www/cread/files/";
     __path = __dir + req.query.id + ".json";
-    __scriptPath = "/var/www/cread/server/script.sh";
   }
-
   const exist = fs.existsSync(__path);
-
   if (exist && !req.query.force) {
     console.log(prefix + "already scraped: ", __path);
     return res.status(200).send({ data: req.query.id + " already scraped" });
   }
-
   console.log(prefix + "downloading: ", __path);
+
+  let __scriptPath = new URL(`./script.sh`, import.meta.url).pathname;
+  if (process.env.NODE_ENV === "production") {
+    __scriptPath = "/var/www/cread/server/script.sh";
+  }
 
   try {
     const stdout = cp.execSync(
