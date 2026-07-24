@@ -23,10 +23,21 @@ const ExternalLinkIcon = () => (
     </g>
   </svg>
 );
+const Nav = styled.nav`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 12px;
+  ul {
+    list-style-type: none;
+    text-align: left;
+  }
+`;
 const Row = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
 `;
 const StyledPage = styled.div`
   a {
@@ -98,17 +109,6 @@ const StyledPage = styled.div`
       color: #be23be;
     }
   }
-  nav {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 12px;
-    ul {
-      list-style-type: none;
-      text-align: left;
-    }
-  }
   ul {
     list-style-type: none;
     margin: 0;
@@ -124,6 +124,7 @@ const StyledPage = styled.div`
     display: none;
   }
 `;
+const Section1 = styled.nav``;
 const StyledDiv3 = styled.div`
   position: fixed;
   bottom: 36px;
@@ -173,6 +174,14 @@ const StyledHeader = styled.header`
 const StyledLink = styled.a`
   display: flex;
   align-items: center;
+  gap: 3px;
+  text-decoration: none !important;
+`;
+const StyledSelect = styled.select`
+  padding: 12px;
+  border-radius: 36px;
+  background: #f9f9f9;
+  color: black;
 `;
 
 const d: Record<number, Date> = {
@@ -553,51 +562,53 @@ const Home: React.FC<HomeProps> = (_props) => {
   return (
     <StyledPage id="top" isDark={theme === "dark"}>
       <header>
-        <h1>Reader for long Xenforo threads</h1>
         <h2>Which thread do you want to read?</h2>
       </header>
 
       {/* STEP 1 : thread selection */}
-      <nav>
+      <Section1>
         {/* Pick a thread */}
-        <Row>
+        <Row style={{ flexDirection: "column" }}>
           <label>Pick a thread</label>
           {isThreadsLoading ? (
             "Loading thread selection by @romseguy"
           ) : (
-            <ul>
+            <StyledSelect
+              value={threadUrl}
+              style={{ width: "82%", textAlign: "center" }}
+              onChange={(e) => {
+                const url = e.target.value;
+                setIsLoaded(false);
+                setIsSubmitted(false);
+                setThreadUrl(url);
+              }}
+            >
+              <option></option>
               {(threads || []).map(({ url, title }, index) => {
                 return (
-                  <li key={index}>
-                    <a
-                      style={{ cursor: "pointer" }}
-                      onClick={() => {
-                        setIsLoaded(false);
-                        setIsSubmitted(false);
-                        setThreadUrl(url);
-                      }}
-                    >
-                      {title}
-                    </a>
-                  </li>
+                  <option key={index} value={url}>
+                    {title}
+                  </option>
                 );
               })}
-            </ul>
+            </StyledSelect>
           )}
         </Row>
 
         {/* Enter thread url */}
-        <Row>
+        <Row style={{ flexDirection: "column" }}>
           <label>Or enter thread url</label>
           <input
             type="text"
             value={threadUrl}
+            style={{ width: "80%" }}
             onChange={(event) => {
               setThreadUrl(event.target.value);
             }}
           />
           {threadUrl && (
             <button
+              style={{ marginTop: "6px" }}
               onClick={() => {
                 setIsLoaded(false);
                 setIsSubmitted(false);
@@ -608,44 +619,50 @@ const Home: React.FC<HomeProps> = (_props) => {
             </button>
           )}
         </Row>
-      </nav>
+      </Section1>
 
       {/* STEP 2 : options */}
       {threadUrl && (
         <>
-          <hr />
-
           <StyledHeader>
-            <h2 style={{ display: "flex", gap: 7 }}>
-              <span
+            <h2>
+              {/* <span
                 style={{
                   color: theme === "dark" ? "white" : "black",
                 }}
               >
                 Thread :
-              </span>
+              </span> */}
               <StyledLink href={threadUrl} target="_blank">
                 {threads?.find(({ url }) => url === threadUrl)?.title}
-                <ExternalLinkIcon />
               </StyledLink>
             </h2>
 
-            <StyledLink href={threadUrl + "/latest"} target="_blank">
-              Go to latest post
-              <ExternalLinkIcon />
-            </StyledLink>
+            <div style={{ gap: "6px" }}>
+              <StyledLink href={threadUrl} target="_blank">
+                <button
+                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                >
+                  Go to first post
+                  <ExternalLinkIcon />
+                </button>
+              </StyledLink>
+
+              <StyledLink href={threadUrl + "/latest"} target="_blank">
+                <button
+                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                >
+                  Go to latest post
+                  <ExternalLinkIcon />
+                </button>
+              </StyledLink>
+            </div>
           </StyledHeader>
 
           <hr />
 
           <StyledHeader>
-            <h2
-              style={{
-                color: theme === "dark" ? "white" : "black",
-              }}
-            >
-              Reading options
-            </h2>
+            <h2>Which options do you want to set?</h2>
 
             {threadUrl && (
               <StyledDiv4>
@@ -722,64 +739,63 @@ const Home: React.FC<HomeProps> = (_props) => {
 
       {/* SUBMIT BUTTON : view  all messages */}
       {threadUrl && !isLoaded && (
-        <nav>
-          <div style={{ margin: "12px" }}>
-            <div style={{ textAlign: "center" }}>
-              {isSubmitted ? (
-                <>
-                  {/* <Spinner /> */}
-                  Loading messages, please wait...
-                </>
-              ) : (
-                <>
-                  {user === "*" && (
-                    <button
-                      type="submit"
-                      data-key={isSubmitted}
-                      disabled={isSubmitted}
-                      onClick={handleLoadAllClick}
-                      style={{ marginRight: "12px" }}
-                    >
-                      {`${isForce ? "Load" : "View"} all messages`}
-                    </button>
-                  )}
-
-                  {user !== "*" && (
-                    <button
-                      type="submit"
-                      data-key={isSubmitted}
-                      disabled={isSubmitted}
-                      onClick={handleLoadAllByUserClick}
-                      style={{ marginRight: "12px" }}
-                    >
-                      {`${
-                        isForce ? "Load" : "View"
-                      } all messages posted by ${user}`}
-                    </button>
-                  )}
-
+        <Nav>
+          <div style={{ textAlign: "center" }}>
+            {isSubmitted ? (
+              <>
+                {/* <Spinner /> */}
+                Loading messages, please wait...
+              </>
+            ) : (
+              <>
+                <h2>How do you want to read the thread?</h2>
+                {user === "*" && (
                   <button
                     type="submit"
                     data-key={isSubmitted}
                     disabled={isSubmitted}
-                    onClick={handleLoadClick}
+                    onClick={handleLoadAllClick}
+                    style={{ marginRight: "12px" }}
                   >
-                    {user !== "*"
-                      ? `${
-                          isForce ? "Load" : "View"
-                        } messages posted by ${user} by year`
-                      : `${isForce ? "Load" : "View"} all messages by year`}
+                    {`${isForce ? "Load" : "View"} all messages`}
                   </button>
-                </>
-              )}
-            </div>
+                )}
+
+                {user !== "*" && (
+                  <button
+                    type="submit"
+                    data-key={isSubmitted}
+                    disabled={isSubmitted}
+                    onClick={handleLoadAllByUserClick}
+                    style={{ marginRight: "12px" }}
+                  >
+                    {`${
+                      isForce ? "Load" : "View"
+                    } all messages posted by ${user}`}
+                  </button>
+                )}
+
+                <button
+                  type="submit"
+                  data-key={isSubmitted}
+                  disabled={isSubmitted}
+                  onClick={handleLoadClick}
+                >
+                  {user !== "*"
+                    ? `${
+                        isForce ? "Load" : "View"
+                      } messages posted by ${user} by year`
+                    : `${isForce ? "Load" : "View"} all messages by year`}
+                </button>
+              </>
+            )}
           </div>
-        </nav>
+        </Nav>
       )}
 
       {/* STEP 3 : pick a year */}
       {isLoaded && canPickYear && (
-        <nav>
+        <Nav>
           <div style={{ textAlign: "center" }}>
             {postCount > 0 ? (
               <>
@@ -812,7 +828,7 @@ const Home: React.FC<HomeProps> = (_props) => {
               </h2>
             )}
           </div>
-        </nav>
+        </Nav>
       )}
 
       {/* STEP 4 : pick a message */}
@@ -822,7 +838,7 @@ const Home: React.FC<HomeProps> = (_props) => {
         currentYearPosts.length > 0 &&
         Object.keys(postCountByUserName).length > 0 && (
           <div>
-            <nav>
+            <Nav>
               <h1>Number of posts by people in {currentY}</h1>
               <StyledDiv6>
                 {Object.keys(postCountByUserName)
@@ -846,7 +862,7 @@ const Home: React.FC<HomeProps> = (_props) => {
                     );
                   })}
               </StyledDiv6>
-            </nav>
+            </Nav>
           </div>
         )}
 

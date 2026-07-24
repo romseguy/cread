@@ -82,11 +82,18 @@ const StyledDiv2 = styled.div`
   }
 `;
 
-const StyledNav = styled.nav`
+const StyledHeader = styled.header`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   border-bottom-width: 10px;
   border-bottom-color: ${(props) => (props.isDark ? "white" : "black")};
   border-bottom-style: solid;
-  text-align: center;
+
+  nav {
+    display: flex;
+    gap: 12px;
+  }
 `;
 
 const Layout: React.FC<LayoutProps> = (props) => {
@@ -156,19 +163,14 @@ const Layout: React.FC<LayoutProps> = (props) => {
         </StyledDiv2>
       </StyledDiv>
 
-      <StyledNav isDark={theme === "dark"}>
-        <ul>
-          <li>
-            <NavLink to={"/"}>Home</NavLink>
-          </li>
-          <li>
-            <NavLink to={"about"}>About</NavLink>
-          </li>
-          <li>
-            <NavLink to={"contact"}>Contact</NavLink>
-          </li>
-        </ul>
-      </StyledNav>
+      <StyledHeader isDark={theme === "dark"}>
+        <h1>Reader for long Xenforo threads</h1>
+        <nav>
+          <NavLink to={"/"}>Home</NavLink>
+          <NavLink to={"about"}>About</NavLink>
+          <NavLink to={"contact"}>Contact</NavLink>
+        </nav>
+      </StyledHeader>
 
       <Outlet />
     </StyledLayout>

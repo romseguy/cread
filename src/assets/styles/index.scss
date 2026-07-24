@@ -45,8 +45,7 @@ svg {
   ##Screen = 1281px to higher resolution desktops
 */
 @media (min-width: 1281px) {
-  main,
-  nav {
+  main {
     margin: 0 auto;
     max-width: 1000px;
     min-width: 700px;

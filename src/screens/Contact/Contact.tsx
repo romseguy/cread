@@ -10,8 +10,9 @@ const Contact: React.FC<ContactProps> = (props) => {
 
   return (
     <main>
+      <h1>Contact</h1>
       <p>
-        Contact{" "}
+        Send a direct message to{" "}
         <a href="https://cassiopaea.org/forum/direct-messages/add?to=romseguy">
           @romseguy
         </a>{" "}
