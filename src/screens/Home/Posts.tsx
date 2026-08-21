@@ -106,6 +106,7 @@ export const Posts = ({
             </h1>
             <ul>
               {currentYearPosts.map((post, index) => {
+                console.log(post.date);
                 if (user && user !== "*" && user !== post.user) return null;
                 return (
                   <li key={`item-${index}`}>
@@ -117,7 +118,10 @@ export const Posts = ({
                           marginRight: "12px",
                         }}
                       >
-                        {format(post.date, "d MMMM yyyy")}
+                        {typeof post.date === "string" &&
+                        post.date.length === 24
+                          ? format(new Date(post.date), "d MMMM yyyy")
+                          : "No date"}
                       </button>
                     </a>
                     {(!user || user === "*") && (

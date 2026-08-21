@@ -103,6 +103,7 @@ export const Post = ({
     for (let i = 0; i < imgs.length; i++) {
       const img = imgs[i];
       img.classList.add("clip");
+      img.style["max-width"] = "980px";
     }
 
     setText(doc.body.innerHTML);
@@ -156,7 +157,9 @@ export const Post = ({
             target="_blank"
             title="Go to post"
           >
-            {format(date, "d MMMM yyyy")}
+            {typeof date === "string" && date.length === 24
+              ? format(new Date(date), "d MMMM yyyy")
+              : "No date"}
           </a>
         </h1>
         by
